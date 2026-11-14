@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth, PRESET_USERS } from "@/lib/auth";
+import { shortReportId } from "@/lib/accounts";
+import { useAuth, DEMO_ACCOUNTS } from "@/lib/auth";
 import { Lock, ShieldCheck, UserCheck, ArrowRight, Mail, Key } from "lucide-react";
 
 export function AuthModal() {
@@ -36,7 +37,7 @@ export function AuthModal() {
 
   return (
     <Dialog open={isAuthModalOpen} onOpenChange={(open) => !open && closeAuthModal()}>
-      <DialogContent className="sm:max-w-[440px] p-0 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <DialogContent className="sm:max-w-[440px] max-h-[90vh] overflow-y-auto p-0 rounded-2xl border border-slate-200 bg-white">
         {/* Top Header */}
         <div className="bg-slate-50 border-b border-slate-100 p-6 pb-5 text-center">
           <div className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-navy text-white shadow-xs">
@@ -51,6 +52,48 @@ export function AuthModal() {
         </div>
 
         <div className="p-6 space-y-4">
+          {/* Demo accounts: pick a patient; that account sees only its own reports */}
+          <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+            <p className="text-xs font-bold text-navy">Choose a demo account</p>
+            <p className="mt-0.5 text-[11px] leading-snug text-slate-500">
+              Each demo account sees only its own reports, so you can check that one patient never sees another's.
+            </p>
+            <div className="mt-2 grid max-h-56 grid-cols-2 gap-1.5 overflow-y-auto pr-1" role="listbox" aria-label="Demo accounts">
+              {DEMO_ACCOUNTS.map((u) => {
+                const isActive = user?.patientId === u.patientId;
+                return (
+                  <button
+                    key={u.id}
+                    type="button"
+                    role="option"
+                    aria-selected={isActive}
+                    onClick={() => {
+                      switchUser(u.patientId);
+                      closeAuthModal();
+                    }}
+                    className={`flex items-center justify-between rounded-lg border p-2 text-left text-xs transition-colors ${
+                      isActive
+                        ? "border-primary bg-primary/5 text-primary font-bold"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
+                    }`}
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold leading-tight">{u.name}</p>
+                      <p className="text-[10px] text-slate-400 font-mono">{shortReportId(u)}</p>
+                    </div>
+                    {isActive && <CheckIcon className="h-3.5 w-3.5 text-primary shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="relative flex items-center justify-center">
+            <div className="border-t border-slate-200 w-full" />
+            <span className="bg-white px-3 text-[11px] font-medium uppercase tracking-wider text-slate-400 shrink-0">
+              or sign in
+            </span>
+          </div>
           {/* Google Sign In Button */}
           <Button
             type="button"
@@ -161,39 +204,6 @@ export function AuthModal() {
             >
               {mode === "login" ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>
-          </div>
-
-          {/* Persona Switcher for Hackathon Testing */}
-          <div className="pt-3 border-t border-slate-100">
-            <div className="flex items-center justify-between text-[11px] text-slate-500 mb-2 font-medium">
-              <span>Quick Test Personas (Verify Data Isolation):</span>
-            </div>
-            <div className="grid grid-cols-2 gap-1.5">
-              {PRESET_USERS.map((u) => {
-                const isActive = user?.patientId === u.patientId;
-                return (
-                  <button
-                    key={u.patientId}
-                    type="button"
-                    onClick={() => {
-                      switchUser(u.patientId);
-                      closeAuthModal();
-                    }}
-                    className={`flex items-center justify-between rounded-lg border p-2 text-left text-xs transition-colors ${
-                      isActive
-                        ? "border-primary bg-primary/5 text-primary font-bold"
-                        : "border-slate-200 bg-slate-50/70 text-slate-600 hover:bg-slate-100"
-                    }`}
-                  >
-                    <div className="truncate">
-                      <p className="truncate font-semibold leading-tight">{u.name}</p>
-                      <p className="text-[10px] text-slate-400 font-mono">{u.patientId}</p>
-                    </div>
-                    {isActive && <CheckIcon className="h-3.5 w-3.5 text-primary shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
           </div>
         </div>
       </DialogContent>

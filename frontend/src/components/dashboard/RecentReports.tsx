@@ -185,11 +185,17 @@ export function RecentReports({ reports }: { reports: LabReport[] }) {
       </div>
 
       {/* Flash Boxes Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {reports.map((report) => (
-          <ReportCard key={report.id} report={report} />
-        ))}
-      </div>
+      {reports.length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {reports.map((report) => (
+            <ReportCard key={report.id} report={report} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500">
+          No reports on file for this account yet. Pick a demo account from the account menu to see its reports.
+        </div>
+      )}
     </section>
   );
 }

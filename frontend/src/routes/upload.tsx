@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ReportUploader, validateReportFile } from "@/components/upload/ReportUploader";
 import { UploadProgress } from "@/components/upload/UploadProgress";
 import { ANALYSIS_STEPS, AnalysisSteps } from "@/components/upload/AnalysisSteps";
-import { SAMPLE_REPORT_ID } from "@/data/demo-reports";
+import { DEMO_REPORTS } from "@/data/demo-reports";
+import { reportsForPatient } from "@/lib/accounts";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/upload")({
@@ -69,8 +70,12 @@ function UploadPage() {
       setStep((s) => {
         if (s >= ANALYSIS_STEPS.length - 1) {
           window.clearInterval(id);
-          const targetReportId = user?.patientId === "CLD-P002-8821" ? "report-P002" : user?.patientId === "CLD-P003-7714" ? "report-P003" : SAMPLE_REPORT_ID;
-          window.setTimeout(() => navigate({ to: "/reports/$reportId", params: { reportId: targetReportId } }), 500);
+          // Open this account's own report; an account with no report goes to its (empty) list.
+          const own = reportsForPatient(DEMO_REPORTS, user?.patientId)[0];
+          window.setTimeout(() => {
+            if (own) navigate({ to: "/reports/$reportId", params: { reportId: own.id } });
+            else navigate({ to: "/reports" });
+          }, 500);
           return ANALYSIS_STEPS.length;
         }
         return s + 1;

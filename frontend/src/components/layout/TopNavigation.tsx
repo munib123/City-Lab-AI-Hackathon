@@ -7,22 +7,44 @@ import { Logo } from "@/components/brand/Logo";
 import { SidebarNav } from "./SidebarNav";
 import { pageTitle } from "./nav-items";
 import { cn } from "@/lib/utils";
-import { SAMPLE_REPORT_ID } from "@/data/demo-reports";
-import { useAuth } from "@/lib/auth";
+import { DEMO_REPORTS } from "@/data/demo-reports";
+import type { LabReport } from "@/data/types";
+import { reportsForPatient, shortReportId } from "@/lib/accounts";
+import { analyzeReport, countStatuses } from "@/lib/analysis";
+import { DEMO_ACCOUNTS, useAuth } from "@/lib/auth";
 
-const INITIAL_NOTIFICATIONS = [
-  { id: 1, title: "Analysis ready", body: "Complete Blood Count & Metabolic Panel has been explained.", reportId: SAMPLE_REPORT_ID },
-  { id: 2, title: "1 urgent value identified", body: "Review the highlighted result and contact a professional.", reportId: SAMPLE_REPORT_ID },
-  { id: 3, title: "Glossary updated", body: "Plain-language entries for liver tests were added.", reportId: null },
-] as const;
+type Notification = { id: number; title: string; body: string; reportId: string | null };
+
+/** Notifications come only from the signed-in account's own reports. */
+function buildNotifications(reports: LabReport[]): Notification[] {
+  const items: Notification[] = [];
+  const report = reports[0];
+  if (report) {
+    items.push({ id: 1, title: "Analysis ready", body: `${report.name} has been explained.`, reportId: report.id });
+    const urgent = countStatuses(analyzeReport(report)).urgent;
+    if (urgent > 0) {
+      items.push({
+        id: 2,
+        title: `${urgent} urgent value${urgent === 1 ? "" : "s"} identified`,
+        body: "Review the highlighted result and contact a professional.",
+        reportId: report.id,
+      });
+    }
+  }
+  items.push({ id: 3, title: "Glossary updated", body: "Plain-language entries for liver tests were added.", reportId: null });
+  return items;
+}
 
 export function TopNavigation() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
-  const [unread, setUnread] = useState<number[]>(INITIAL_NOTIFICATIONS.map((n) => n.id));
+  const [readKeys, setReadKeys] = useState<string[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, openAuthModal, logout } = useAuth();
+  const { user, openAuthModal, logout, switchUser } = useAuth();
+  const notifications = buildNotifications(reportsForPatient(DEMO_REPORTS, user?.patientId));
+  const keyOf = (n: Notification) => `${user?.id ?? "guest"}:${n.id}`;
+  const unread = notifications.filter((n) => !readKeys.includes(keyOf(n))).map((n) => n.id);
 
   const onSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -92,19 +114,19 @@ export function TopNavigation() {
                 type="button"
                 className="text-xs font-semibold text-primary disabled:text-muted-foreground"
                 disabled={unread.length === 0}
-                onClick={() => setUnread([])}
+                onClick={() => setReadKeys(notifications.map(keyOf))}
               >
                 Mark all read
               </button>
             </div>
             <ul className="max-h-80 overflow-auto py-1">
-              {INITIAL_NOTIFICATIONS.map((n) => (
+              {notifications.map((n) => (
                 <li key={n.id}>
                   <Link
                     {...(n.reportId
                       ? { to: "/reports/$reportId" as const, params: { reportId: n.reportId } }
                       : { to: "/glossary" as const, search: {} })}
-                    onClick={() => setUnread((u) => u.filter((x) => x !== n.id))}
+                    onClick={() => setReadKeys((k) => [...k, keyOf(n)])}
                     className="flex gap-3 px-4 py-3 transition-colors hover:bg-muted"
                   >
                     <span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", unread.includes(n.id) ? "bg-primary" : "bg-border")} />
@@ -149,6 +171,25 @@ export function TopNavigation() {
                   Patient ID: {user.patientId}
                 </div>
               </div>
+              <div className="py-3 border-b border-slate-100">
+                <label htmlFor="demo-account" className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                  Demo account
+                </label>
+                <select
+                  id="demo-account"
+                  value={user.provider === "demo" ? user.patientId : ""}
+                  onChange={(e) => e.target.value && switchUser(e.target.value)}
+                  className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-700 outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/15"
+                >
+                  {user.provider !== "demo" && <option value="">Not a demo account</option>}
+                  {DEMO_ACCOUNTS.map((a) => (
+                    <option key={a.id} value={a.patientId}>
+                      {a.name} ({shortReportId(a)})
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[10px] leading-snug text-slate-500">Each demo account sees only its own reports.</p>
+              </div>
               <div className="pt-2 space-y-1">
                 <button
                   type="button"
@@ -156,7 +197,7 @@ export function TopNavigation() {
                   className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
                 >
                   <User className="h-3.5 w-3.5 text-primary" />
-                  Switch Demo Persona / Login
+                  Sign in / create account
                 </button>
                 <button
                   type="button"

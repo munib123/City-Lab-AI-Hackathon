@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { DEMO_PATIENT_ID } from "@/data/demo-reports";
+import { useAuth } from "@/lib/auth";
 import { useSettings, type AppSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/settings")({
@@ -26,6 +26,7 @@ const OPTIONS: { key: keyof AppSettings; title: string; body: string }[] = [
 ];
 
 function SettingsPage() {
+  const { user } = useAuth();
   const { settings, update, reset } = useSettings();
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -52,11 +53,11 @@ function SettingsPage() {
         <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-3">
           <div>
             <dt className="text-xs text-muted-foreground">Name</dt>
-            <dd className="font-semibold">Demo Patient</dd>
+            <dd className="font-semibold">{user?.name ?? "Not signed in"}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Patient ID</dt>
-            <dd className="font-semibold num">{DEMO_PATIENT_ID}</dd>
+            <dd className="font-semibold num">{user?.patientId ?? "-"}</dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground">Data</dt>
