@@ -17,6 +17,8 @@ from . import config
 
 log = logging.getLogger("medlens.store")
 
+AUDIO_BUCKET = "tts-audio"
+
 
 def demographics_key(age: int | None, sex: str | None) -> str:
     return f"age={'' if age is None else age}|sex={sex or ''}"
@@ -30,11 +32,29 @@ class Store:
 
     # ------------------------------------------------------------ plumbing
 
-    def _headers(self, prefer: str) -> dict[str, str]:
-        headers = {"apikey": self.key, "Content-Type": "application/json", "Prefer": prefer}
+    def _auth(self) -> dict[str, str]:
+        headers = {"apikey": self.key}
         if self.key.startswith("eyJ"):  # legacy service_role JWT; new sb_secret_ keys are not JWTs
             headers["Authorization"] = f"Bearer {self.key}"
         return headers
+
+    def _headers(self, prefer: str) -> dict[str, str]:
+        return {**self._auth(), "Content-Type": "application/json", "Prefer": prefer}
+
+    def _get(self, table: str, params: dict) -> list | None:
+        try:
+            response = self.http.get(f"{self.url}/rest/v1/{table}", params=params, headers=self._auth())
+        except Exception as exc:
+            log.warning("Supabase %s read failed (%s)", table, type(exc).__name__)
+            return None
+        if response.status_code >= 300:
+            log.warning("Supabase %s read failed (HTTP %s)", table, response.status_code)
+            return None
+        try:
+            rows = response.json()
+        except ValueError:
+            return None
+        return rows if isinstance(rows, list) else None
 
     def _post(self, table: str, row: dict, prefer: str, params: dict | None = None) -> httpx.Response | None:
         try:
@@ -104,6 +124,72 @@ class Store:
             row,
             prefer="resolution=merge-duplicates,return=minimal",
             params={"on_conflict": "report_id,demographics_key"},
+        )
+        return response is not None
+
+
+    # ------------------------------------------------------------ read-aloud audio
+
+    def get_chat_answer(self, chat_id: str) -> str | None:
+        """The stored answer of one chat row (so only text the API itself produced is ever spoken)."""
+        rows = self._get("chat_messages", {"id": f"eq.{chat_id}", "select": "answer", "limit": "1"})
+        return rows[0].get("answer") if rows else None
+
+    def find_audio(self, text_hash: str, voice: str) -> str | None:
+        """Storage path of already-synthesized audio for this text and voice, if any."""
+        rows = self._get(
+            "tts_audio",
+            {"text_hash": f"eq.{text_hash}", "voice": f"eq.{voice}", "select": "storage_path", "limit": "1"},
+        )
+        return rows[0].get("storage_path") if rows else None
+
+    def upload_audio(self, path: str, data: bytes) -> bool:
+        """Put an MP3 in the private tts-audio bucket (overwrites the same path)."""
+        try:
+            response = self.http.post(
+                f"{self.url}/storage/v1/object/{AUDIO_BUCKET}/{path}",
+                content=data,
+                headers={**self._auth(), "Content-Type": "audio/mpeg", "x-upsert": "true"},
+            )
+        except Exception as exc:
+            log.warning("Supabase audio upload failed (%s)", type(exc).__name__)
+            return False
+        if response.status_code >= 300:
+            log.warning("Supabase audio upload failed (HTTP %s)", response.status_code)
+            return False
+        return True
+
+    def signed_audio_url(self, path: str, expires_in: int = 3600) -> str | None:
+        """A temporary link to a private audio file."""
+        try:
+            response = self.http.post(
+                f"{self.url}/storage/v1/object/sign/{AUDIO_BUCKET}/{path}",
+                json={"expiresIn": expires_in},
+                headers={**self._auth(), "Content-Type": "application/json"},
+            )
+        except Exception as exc:
+            log.warning("Supabase audio signing failed (%s)", type(exc).__name__)
+            return None
+        if response.status_code >= 300:
+            log.warning("Supabase audio signing failed (HTTP %s)", response.status_code)
+            return None
+        try:
+            signed = response.json()["signedURL"]
+        except (KeyError, TypeError, ValueError):
+            return None
+        return f"{self.url}/storage/v1{signed}"
+
+    def save_audio(self, text_hash: str, voice: str, source: str, text: str, storage_path: str, byte_size: int) -> bool:
+        row = {
+            "text_hash": text_hash,
+            "voice": voice,
+            "source": source,
+            "text": text,
+            "storage_path": storage_path,
+            "byte_size": byte_size,
+        }
+        response = self._post(
+            "tts_audio", row, prefer="resolution=merge-duplicates,return=minimal", params={"on_conflict": "text_hash,voice"}
         )
         return response is not None
 
