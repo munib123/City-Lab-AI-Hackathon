@@ -146,6 +146,42 @@ The two refusals work even when chat is switched off (no key), because they are 
 checked in code before it is returned: its cited ids must exist, it must not sound like a diagnosis, it must not
 mention another patient, and it is checked for reading level (about class 8).
 
+## Email a report (`POST /api/email`)
+
+Sends the explanation of a corpus report to one email address (Gmail SMTP). The email has the urgent warning (if any), every
+result with its status, what the test measures and what a low/high value can mean (labelled "General information, not from
+CityLab's files"), unit conversions, the 3 to 5 questions for the doctor, and the disclaimer. It has **no patient name or record
+number**, only "Report P004".
+
+```json
+{ "report_id": "P004", "to": "name@example.com" }
+{ "report_id": "P003", "to": "name@example.com", "age": 40, "sex": "Male" }
+```
+```json
+{ "sent": true, "to": "n***@example.com", "report_id": "P004" }
+```
+
+This goes out from a real Gmail account, so it is deliberately narrow and rate limited:
+
+- **Fixed content only.** There is no subject, body, cc or free-text field; any extra field is a 422.
+- **Corpus reports only** (`report_id`); pasted text cannot be emailed.
+- **One plain address.** Lists, names with brackets and anything with a line break are rejected (422).
+- **Limits:** 5 emails per hour from one connection, 3 per hour and 5 per day to one recipient, 100 per day in total. Over the
+  limit gives 429 with a `Retry-After` header (seconds). Failed attempts count too.
+- **Fails closed.** If the limits cannot be checked, nothing is sent (503).
+- The log keeps only salted hashes of the address and the IP, never the address itself.
+
+| Code | When |
+|---|---|
+| 200 | handed to the mail server (delivery to the inbox is not guaranteed) |
+| 404 | unknown `report_id` |
+| 422 | bad address, extra fields, bad `age`/`sex` |
+| 429 | a limit was reached; wait `Retry-After` seconds |
+| 502 | the mail server refused or could not be reached |
+| 503 | email is not configured, or the limits cannot be checked right now |
+
+`GET /api/health` shows `"email_enabled": true` when SMTP settings exist. Tell the user to check their spam folder.
+
 ## Read aloud (`POST /api/tts`)
 
 Turns an answer or part of a report into speech (Microsoft Edge voices) and returns a link to the audio. The audio is made
@@ -189,6 +225,7 @@ Responses are saved in Supabase (`supabase/migrations/`), **for corpus reports o
 |---|---|
 | `chat_messages` | every chat question and answer, including refusals and "unavailable": answer type, sources, reading grade, model, the age/sex the answer was based on |
 | `analyses` | the latest analysis for each report and age/sex combination (the full `Analysis` JSON; analysing again updates it, no duplicates) |
+| `email_log` | rate-limit bookkeeping for report emails: salted hashes of the sender's IP and the recipient, the report id and sent/failed. No addresses, no content |
 | `tts_audio` + private bucket `tts-audio` | the read-aloud audio cache: one MP3 per text and voice, with the exact spoken text |
 
 **Pasted report text (`text`) is never stored**, neither the text nor its analysis nor its chat, because it may be a real

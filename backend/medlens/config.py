@@ -56,6 +56,32 @@ def clean_env(name: str) -> str:
     return _clean_key(os.environ.get(name, ""))
 
 
+@dataclass(frozen=True)
+class SMTPSettings:
+    host: str
+    port: int
+    email: str
+    password: str
+
+    @property
+    def enabled(self) -> bool:
+        return bool(self.host and self.email and self.password)
+
+
+def smtp_settings() -> SMTPSettings:
+    """Gmail SMTP settings. The password is a Gmail *app password* (Gmail shows it in groups of four, with spaces)."""
+    try:
+        port = int(clean_env("SMTP_PORT") or 587)
+    except ValueError:
+        port = 587
+    return SMTPSettings(
+        host=clean_env("SMTP_HOST") or "smtp.gmail.com",
+        port=port,
+        email=clean_env("SMTP_EMAIL").strip("\"'"),
+        password=re.sub(r"\s+", "", clean_env("SMTP_APP_PASSWORD")).strip("\"'"),
+    )
+
+
 def public_app_url() -> str:
     """The frontend's public address (for QR links). Empty until the frontend is deployed."""
     return _clean_key(os.environ.get("PUBLIC_APP_URL", "")).rstrip("/")

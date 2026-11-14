@@ -131,5 +131,5 @@ def test_no_secret_shaped_strings_in_the_repo(label):
 
 def test_env_example_has_empty_keys():
     for line in _text(".env.example").splitlines():
-        if line.startswith(("GEMINI_API_KEY=", "GROQ_API_KEY=")):
+        if line.startswith(("GEMINI_API_KEY=", "GROQ_API_KEY=", "SMTP_APP_PASSWORD=", "SMTP_EMAIL=")):
             assert line.split("=", 1)[1].strip() == "", line
