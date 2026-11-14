@@ -1,3 +1,5 @@
+import pytest
+
 from medlens import config
 
 
@@ -33,6 +35,23 @@ def test_fallback_model_can_be_changed_or_switched_off(monkeypatch):
 def test_groq_has_no_fallback(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "groq")
     assert config.llm_settings().fallback_model is None
+
+
+@pytest.mark.parametrize("raw", ["﻿abc", "  abc\n", "﻿ abc \r\n", "abc​"])
+def test_api_keys_are_cleaned_of_invisible_characters(monkeypatch, raw):
+    # A byte-order mark from a Windows pipe once got stored inside a Vercel secret and crashed every chat call.
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    monkeypatch.setenv("GEMINI_API_KEY", raw)
+    assert config.llm_settings().api_key == "abc"
+    monkeypatch.setenv("LLM_PROVIDER", "groq")
+    monkeypatch.setenv("GROQ_API_KEY", raw)
+    assert config.llm_settings().api_key == "abc"
+
+
+def test_a_key_that_is_only_whitespace_counts_as_missing(monkeypatch):
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    monkeypatch.setenv("GEMINI_API_KEY", " ﻿\n")
+    assert config.llm_settings().enabled is False
 
 
 def test_llm_provider_switch(monkeypatch):
