@@ -26,12 +26,10 @@ def test_root_index_exposes_the_fastapi_app():
     assert module.app is app
 
 
-def test_vercel_json_is_valid_and_trims_the_bundle():
+def test_vercel_json_declares_the_fastapi_preset_and_the_database_region():
     cfg = json.loads(_text("vercel.json"))
+    assert cfg["framework"] == "fastapi"  # without a preset Vercel looks for functions in api/ and the build fails
     assert cfg["regions"] == ["bom1"]  # same region as the Supabase database
-    exclude = cfg["functions"]["index.py"]["excludeFiles"]
-    for part in ("backend/tests", "docs", ".venv"):
-        assert part in exclude
 
 
 def test_python_version_file_matches_a_version_vercel_supports():
