@@ -51,6 +51,16 @@ class SupabaseSettings:
         return bool(self.url and self.key)
 
 
+def clean_env(name: str) -> str:
+    """An environment variable, cleaned of invisible characters and whitespace ('' if unset)."""
+    return _clean_key(os.environ.get(name, ""))
+
+
+def public_app_url() -> str:
+    """The frontend's public address (for QR links). Empty until the frontend is deployed."""
+    return _clean_key(os.environ.get("PUBLIC_APP_URL", "")).rstrip("/")
+
+
 def supabase_settings() -> SupabaseSettings:
     """Supabase REST settings. Variables are injected by the Vercel Supabase integration."""
     url = _clean_key(os.environ.get("SUPABASE_URL", "")).rstrip("/")
