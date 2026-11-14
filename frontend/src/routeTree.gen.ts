@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as GlossaryRouteImport } from './routes/glossary'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as TestCasesRouteImport } from './routes/test-cases'
 import { Route as UploadRouteImport } from './routes/upload'
 import { Route as ReportsIndexRouteImport } from './routes/reports.index'
 import { Route as ReportsReportIdRouteImport } from './routes/reports.$reportId'
@@ -37,6 +38,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TestCasesRoute = TestCasesRouteImport.update({
+  id: '/test-cases',
+  path: '/test-cases',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UploadRoute = UploadRouteImport.update({
   id: '/upload',
   path: '/upload',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/glossary': typeof GlossaryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/settings': typeof SettingsRoute
+  '/test-cases': typeof TestCasesRoute
   '/upload': typeof UploadRoute
   '/reports/$reportId': typeof ReportsReportIdRoute
   '/reports/': typeof ReportsIndexRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/glossary': typeof GlossaryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/settings': typeof SettingsRoute
+  '/test-cases': typeof TestCasesRoute
   '/upload': typeof UploadRoute
   '/reports/$reportId': typeof ReportsReportIdRoute
   '/reports': typeof ReportsIndexRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/glossary': typeof GlossaryRoute
   '/how-it-works': typeof HowItWorksRoute
   '/settings': typeof SettingsRoute
+  '/test-cases': typeof TestCasesRoute
   '/upload': typeof UploadRoute
   '/reports/$reportId': typeof ReportsReportIdRoute
   '/reports/': typeof ReportsIndexRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/glossary'
     | '/how-it-works'
     | '/settings'
+    | '/test-cases'
     | '/upload'
     | '/reports/$reportId'
     | '/reports/'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/glossary'
     | '/how-it-works'
     | '/settings'
+    | '/test-cases'
     | '/upload'
     | '/reports/$reportId'
     | '/reports'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/glossary'
     | '/how-it-works'
     | '/settings'
+    | '/test-cases'
     | '/upload'
     | '/reports/$reportId'
     | '/reports/'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   GlossaryRoute: typeof GlossaryRoute
   HowItWorksRoute: typeof HowItWorksRoute
   SettingsRoute: typeof SettingsRoute
+  TestCasesRoute: typeof TestCasesRoute
   UploadRoute: typeof UploadRoute
   ReportsReportIdRoute: typeof ReportsReportIdRoute
   ReportsIndexRoute: typeof ReportsIndexRoute
@@ -151,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/test-cases': {
+      id: '/test-cases'
+      path: '/test-cases'
+      fullPath: '/test-cases'
+      preLoaderRoute: typeof TestCasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/upload': {
       id: '/upload'
       path: '/upload'
@@ -180,6 +200,7 @@ const rootRouteChildren: RootRouteChildren = {
   GlossaryRoute: GlossaryRoute,
   HowItWorksRoute: HowItWorksRoute,
   SettingsRoute: SettingsRoute,
+  TestCasesRoute: TestCasesRoute,
   UploadRoute: UploadRoute,
   ReportsReportIdRoute: ReportsReportIdRoute,
   ReportsIndexRoute: ReportsIndexRoute,
