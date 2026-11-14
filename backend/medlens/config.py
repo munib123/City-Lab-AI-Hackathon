@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -32,19 +33,27 @@ class LLMSettings:
         return bool(self.api_key)
 
 
+_INVISIBLE = re.compile("[​-‏⁠﻿]")
+
+
+def _clean_key(value: str) -> str:
+    """Drop byte-order marks, zero-width characters and whitespace that sneak into pasted or piped keys."""
+    return _INVISIBLE.sub("", value).strip()
+
+
 def llm_settings() -> LLMSettings:
     """Read LLM settings from the environment at call time (not import time)."""
     provider = os.environ.get("LLM_PROVIDER", "gemini").strip().lower()
     if provider == "groq":
         return LLMSettings(
             provider="groq",
-            api_key=os.environ.get("GROQ_API_KEY", ""),
+            api_key=_clean_key(os.environ.get("GROQ_API_KEY", "")),
             model=os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile"),
         )
     fallback = os.environ.get("GEMINI_FALLBACK_MODEL", DEFAULT_GEMINI_FALLBACK).strip() or None
     return LLMSettings(
         provider="gemini",
-        api_key=os.environ.get("GEMINI_API_KEY", ""),
+        api_key=_clean_key(os.environ.get("GEMINI_API_KEY", "")),
         model=os.environ.get("GEMINI_MODEL", DEFAULT_GEMINI_MODEL),
         fallback_model=fallback,
     )
