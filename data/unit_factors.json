@@ -1,0 +1,21 @@
+{
+  "note": "Team-supplied general information. NOT from the CityLab files. The files only say that a unit which cannot be converted must be marked 'cannot be classified from the files'; they give no conversion factors.",
+  "equivalents": [
+    ["cells/uL", "cells/mcL"],
+    ["cells/µL", "cells/mcL"],
+    ["/uL", "cells/mcL"],
+    ["/mcL", "cells/mcL"],
+    ["IU/L", "U/L"],
+    ["uIU/mL", "mIU/L"],
+    ["µIU/mL", "mIU/L"]
+  ],
+  "conversions": [
+    {"analyte": "Fasting Blood Sugar", "from": "mmol/L", "to": "mg/dL", "factor": 18, "note": "1 mmol/L of glucose = 18 mg/dL"},
+    {"analyte": "Cholesterol", "from": "mmol/L", "to": "mg/dL", "factor": 38.67, "note": "1 mmol/L of cholesterol = 38.67 mg/dL"},
+    {"analyte": "Hemoglobin", "from": "g/L", "to": "g/dL", "factor": 0.1, "note": "10 g/L = 1 g/dL"},
+    {"analyte": "White Blood Cell Count", "from": "10^3/uL", "to": "cells/mcL", "factor": 1000, "note": "1 x10^3/uL = 1000 cells/mcL"},
+    {"analyte": "White Blood Cell Count", "from": "10^9/L", "to": "cells/mcL", "factor": 1000, "note": "1 x10^9/L = 1000 cells/mcL"},
+    {"analyte": "Platelet Count", "from": "10^3/uL", "to": "cells/mcL", "factor": 1000, "note": "1 x10^3/uL = 1000 cells/mcL"},
+    {"analyte": "Platelet Count", "from": "10^9/L", "to": "cells/mcL", "factor": 1000, "note": "1 x10^9/L = 1000 cells/mcL"}
+  ]
+}
