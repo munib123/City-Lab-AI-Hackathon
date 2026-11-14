@@ -92,6 +92,28 @@ class ResultAnalysis(BaseModel):
     explanation: Explanation | None = None  # added by explain.enrich
 
 
+ChatAnswerType = Literal[
+    "answered", "not_in_files", "refused_other_patient", "refused_diagnosis", "needs_info", "unavailable"
+]
+
+
+class ChatSource(BaseModel):
+    id: str  # e.g. "R07", "RES1", "RULE:privacy", "EXPL:ALT"
+    label: str
+    file: str | None = None
+    line: int | None = None
+    origin: Literal["files", "team", "report"]
+
+
+class ChatResponse(BaseModel):
+    report_id: str | None = None
+    answer: str
+    answer_type: ChatAnswerType
+    sources: list[ChatSource] = Field(default_factory=list)
+    llm_used: bool = False  # False when code answered (refusals) or chat is off
+    reading_grade: float | None = None  # Flesch-Kincaid grade of the answer, when a model wrote it
+
+
 class Patient(BaseModel):
     name: str | None = None
     mrn: str | None = None
