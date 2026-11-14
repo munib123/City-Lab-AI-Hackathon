@@ -44,6 +44,20 @@ def test_runtime_requirements_do_not_include_dev_tools():
         assert dev not in reqs
 
 
+def test_pyproject_declares_the_runtime_dependencies_vercel_installs():
+    """Vercel installs from pyproject.toml when it exists and ignores requirements.txt (it did, and the
+    first deploy crashed with 'No module named fastapi'). Keep the two lists in sync."""
+    import tomllib
+
+    declared = tomllib.loads(_text("pyproject.toml"))["project"].get("dependencies", [])
+
+    def names(specs):
+        return {re.split(r"[<>=!~\[ ;]", s.strip(), maxsplit=1)[0].lower() for s in specs if s.strip() and not s.startswith("-")}
+
+    wanted = names(_text("requirements.txt").splitlines())
+    assert wanted and wanted <= names(declared), wanted - names(declared)
+
+
 def test_vercel_ignores_local_only_files():
     ignore = _text(".vercelignore")
     for part in (".venv", ".env", "backend/tests"):
