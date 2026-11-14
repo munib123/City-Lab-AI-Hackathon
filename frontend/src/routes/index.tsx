@@ -3,6 +3,8 @@ import { DashboardHero } from "@/components/dashboard/DashboardHero";
 import { StatsOverview } from "@/components/dashboard/StatsOverview";
 import { RecentReports } from "@/components/dashboard/RecentReports";
 import { DEMO_REPORTS } from "@/data/demo-reports";
+import { reportsForPatient } from "@/lib/accounts";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,12 +21,14 @@ export const Route = createFileRoute("/")({
 });
 
 function Overview() {
-  // Display clean sample of recent reports for Alice Smith (CLD-P001)
-  const recent = DEMO_REPORTS.slice(0, 3);
+  // Only the signed-in demo account's own reports (never anyone else's).
+  const { user } = useAuth();
+  const mine = reportsForPatient(DEMO_REPORTS, user?.patientId);
+  const recent = mine.slice(0, 3);
   return (
     <div className="mx-auto max-w-[1280px] space-y-8">
       <DashboardHero />
-      <StatsOverview />
+      <StatsOverview reports={mine} />
       <RecentReports reports={recent} />
     </div>
   );

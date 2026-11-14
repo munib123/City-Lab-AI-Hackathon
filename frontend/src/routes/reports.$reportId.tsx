@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import { FileQuestion, Info, AlertTriangle, Check, MessageSquare, X, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { DEMO_REPORTS, getDemoReport } from "@/data/demo-reports";
+import { DEMO_REPORTS } from "@/data/demo-reports";
+import { canViewReport, findReportStrict } from "@/lib/accounts";
 import { analyzeReport, countStatuses, CANNOT_CLASSIFY } from "@/lib/analysis";
 import { buildDoctorQuestions } from "@/lib/questions";
 import { downloadReportSummary } from "@/lib/report-download";
@@ -21,7 +22,7 @@ import type { AnalyzedResult, LabReport, Sex } from "@/data/types";
 
 export const Route = createFileRoute("/reports/$reportId")({
   loader: ({ params }) => {
-    const report = getDemoReport(params.reportId);
+    const report = findReportStrict(DEMO_REPORTS, params.reportId);
     if (!report) throw notFound();
     return { report };
   },
@@ -65,7 +66,7 @@ const FILTERS = [
 ] as const;
 
 function ReportAnalysis() {
-  const { user, switchUser, openAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const { report: initialReport } = Route.useLoaderData();
   const navigate = useNavigate();
   const { settings } = useSettings();
@@ -132,8 +133,9 @@ function ReportAnalysis() {
 
   const active = FILTERS.find((f) => f.id === filter)!;
   const visible = results.filter(active.match);
-  // Strict Patient Data Isolation Guardrail (CityLab Safety Rule #4)
-  if (user && initialReport.patient.id !== user.patientId) {
+  // Privacy guard (CityLab Safety Rule #4): a report opens only for the account whose patient id is on it.
+  // A signed-out visitor is blocked too, and the screen never names the report's owner to anyone else.
+  if (!canViewReport(initialReport, user?.patientId)) {
     return (
       <div className="mx-auto max-w-xl py-12 px-4">
         <div className="rounded-2xl border border-red-200 bg-white p-8 text-center space-y-5 shadow-sm">
@@ -142,43 +144,29 @@ function ReportAnalysis() {
           </div>
           <div className="space-y-1.5">
             <h2 className="font-display text-2xl font-bold text-navy">
-              Access Restricted: Patient Privacy Shield
+              {user ? "This report belongs to another account" : "Sign in to open this report"}
             </h2>
             <p className="text-xs text-slate-600 leading-relaxed max-w-md mx-auto">
-              Under CityLab Safety Directive Rule #4, you may only review clinical reports tied to your active authenticated patient profile.
+              Under CityLab Safety Directive Rule #4, each account only sees its own reports.
+              {user ? ` You are using the demo account \u201c${user.name}\u201d.` : ""} Choose a demo account to see that person&rsquo;s reports.
             </p>
-          </div>
-
-          <div className="rounded-xl border border-red-100 bg-red-50/60 p-4 text-xs text-left space-y-2">
-            <div className="flex justify-between items-center pb-2 border-b border-red-100">
-              <span className="text-slate-500">Your Identity:</span>
-              <span className="font-bold text-navy">{user.name} ({user.patientId})</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-500">Target Record:</span>
-              <span className="font-bold text-red-700">{initialReport.patient.name} ({initialReport.patient.id})</span>
-            </div>
           </div>
 
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <Button asChild variant="outline" size="sm" className="rounded-full">
               <Link to="/reports">Back to My Reports</Link>
             </Button>
-            <Button
-              onClick={() => switchUser(initialReport.patient.id)}
-              variant="hero"
-              size="sm"
-              className="rounded-full"
-            >
-              Switch Identity to {initialReport.patient.name}
+            <Button onClick={openAuthModal} variant="hero" size="sm" className="rounded-full">
+              Choose a demo account
             </Button>
           </div>
 
           <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-            Evaluating as a judge? You can examine all 14 clinical edge cases directly in the{" "}
+            Evaluating as a judge? Open any of the 14 clinical edge cases from the{" "}
             <Link to="/test-cases" className="text-primary font-semibold hover:underline">
               Official Benchmark Suite
-            </Link>.
+            </Link>
+            ; each one opens as its own demo account.
           </div>
         </div>
       </div>

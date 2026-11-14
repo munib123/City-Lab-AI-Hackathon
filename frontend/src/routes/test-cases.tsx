@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { DEMO_REPORTS } from "@/data/demo-reports";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -166,6 +167,7 @@ const CATEGORIES = [
 function TestCasesDirectory() {
   const [selectedCat, setSelectedCat] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
+  const { switchUser } = useAuth();
 
   const filtered = DEMO_REPORTS.filter((r) => {
     const meta = TEST_CASES_META[r.id];
@@ -283,7 +285,12 @@ function TestCasesDirectory() {
               {/* Action Button */}
               <div className="pt-5 mt-4 border-t">
                 <Button asChild variant="hero" size="sm" className="w-full justify-between">
-                  <Link to="/reports/$reportId" params={{ reportId: report.id }}>
+                  <Link
+                    to="/reports/$reportId"
+                    params={{ reportId: report.id }}
+                    onClick={() => switchUser(report.patient.id)}
+                    title={`Opens as the demo account ${report.patient.name}`}
+                  >
                     <span>Launch & Inspect Report</span>
                     <ArrowRight className="h-4 w-4" />
                   </Link>

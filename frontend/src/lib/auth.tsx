@@ -1,44 +1,25 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  patientId: string;
-  provider: "google" | "email";
-  avatar?: string;
-  dateOfBirth?: string;
-  biologicalSex?: "Male" | "Female";
-}
+import { DEMO_REPORTS } from "@/data/demo-reports";
+import { buildDemoAccounts, restoreUser, type AppUser } from "@/lib/accounts";
 
-export const PRESET_USERS: User[] = [
-  {
-    id: "user-alice",
-    name: "Alice Smith",
-    email: "alice.smith@gmail.com",
-    patientId: "CLD-P001-9942",
-    provider: "google",
-    biologicalSex: "Female",
-    dateOfBirth: "1994-06-12",
-  },
-  {
-    id: "user-bob",
-    name: "Bob Jones",
-    email: "bob.jones@outlook.com",
-    patientId: "CLD-P002-8821",
-    provider: "email",
-    biologicalSex: "Male",
-    dateOfBirth: "1982-11-04",
-  },
-  {
-    id: "user-charlie",
-    name: "Charlie Brown",
-    email: "charlie.b@gmail.com",
-    patientId: "CLD-P003-7714",
-    provider: "google",
-    biologicalSex: undefined, // Missing demographics test case
-  },
-];
+export type User = AppUser;
+
+/**
+ * The demo accounts: one per patient (14), built from the reports so each account's patient id is exactly the one
+ * written on that patient's reports. An account sees its own reports and no one else's (see lib/accounts.ts).
+ */
+export const DEMO_ACCOUNTS = buildDemoAccounts(DEMO_REPORTS);
+export const PRESET_USERS: User[] = DEMO_ACCOUNTS;
+
+/** Who is signed in when nothing valid was saved: the first demo account (a guest with no reports if there were none). */
+const DEFAULT_ACCOUNT: User = DEMO_ACCOUNTS[0] ?? {
+  id: "guest",
+  name: "Guest",
+  email: "guest@demo.citylab",
+  patientId: "CLD-GUEST-0000",
+  provider: "demo",
+};
 
 interface AuthContextType {
   user: User | null;
@@ -58,16 +39,20 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_STORAGE_KEY = "citylab_auth_user_session";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Default to Alice Smith as verified initial patient, or load from local storage
+  // Default to the first demo account, or restore the saved one. The saved copy is validated and rebuilt, so an old
+  // or edited entry in the browser cannot carry a stale patient id or claim another patient's reports.
   const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === "undefined") return PRESET_USERS[0];
+    if (typeof window === "undefined") return DEFAULT_ACCOUNT;
     try {
       const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) return JSON.parse(stored);
+      if (stored) {
+        const restored = restoreUser(JSON.parse(stored), DEMO_ACCOUNTS);
+        if (restored) return restored;
+      }
     } catch {
       // fallback
     }
-    return PRESET_USERS[0];
+    return DEFAULT_ACCOUNT;
   });
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -89,12 +74,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const loginWithGoogle = async (email?: string) => {
-    // Realistic Google OAuth simulation
-    const targetEmail = email || "alice.smith@gmail.com";
-    const matched = PRESET_USERS.find((u) => u.email.toLowerCase() === targetEmail.toLowerCase()) || {
+    // Google sign-in simulation. Without an address it opens the first demo account.
+    if (!email) {
+      setUser(DEFAULT_ACCOUNT);
+      setIsAuthModalOpen(false);
+      return;
+    }
+    const matched = DEMO_ACCOUNTS.find((u) => u.email.toLowerCase() === email.toLowerCase()) || {
       id: `user-${Date.now()}`,
-      name: targetEmail.split("@")[0].replace(".", " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-      email: targetEmail,
+      name: (email.split("@")[0] ?? email).replace(".", " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      email,
       patientId: `CLD-G${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`,
       provider: "google" as const,
       biologicalSex: "Female" as const,
@@ -104,9 +93,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginWithEmail = async (email: string, _pass: string) => {
-    const matched = PRESET_USERS.find((u) => u.email.toLowerCase() === email.toLowerCase()) || {
+    const matched = DEMO_ACCOUNTS.find((u) => u.email.toLowerCase() === email.toLowerCase()) || {
       id: `user-${Date.now()}`,
-      name: email.split("@")[0].replace(".", " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+      name: (email.split("@")[0] ?? email).replace(".", " ").replace(/\b\w/g, (c) => c.toUpperCase()),
       email,
       patientId: `CLD-E${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`,
       provider: "email" as const,
@@ -123,8 +112,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email: email.trim(),
       patientId: `CLD-U${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000 + Math.random() * 9000)}`,
       provider: "email",
-      biologicalSex: sex,
     };
+    if (sex) newUser.biologicalSex = sex;
     setUser(newUser);
     setIsAuthModalOpen(false);
   };
@@ -134,7 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const switchUser = (patientId: string) => {
-    const found = PRESET_USERS.find((u) => u.patientId === patientId);
+    const found = DEMO_ACCOUNTS.find((u) => u.patientId === patientId);
     if (found) {
       setUser(found);
     }

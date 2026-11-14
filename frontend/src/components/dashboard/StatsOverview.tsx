@@ -1,20 +1,20 @@
-import { DEMO_REPORTS } from "@/data/demo-reports";
+import type { LabReport } from "@/data/types";
 import { analyzeReport } from "@/lib/analysis";
 import { buildDoctorQuestions } from "@/lib/questions";
 import capsuleImage from "@/assets/navy-capsule.jpg";
 
 /** Demo statistics derived from the fictional reports — not real patient outcomes. */
-function getDemoStats() {
-  const analyzed = DEMO_REPORTS.map(analyzeReport);
+function getDemoStats(reports: LabReport[]) {
+  const analyzed = reports.map(analyzeReport);
   return [
-    { label: "Reports Analyzed", value: DEMO_REPORTS.length, note: "Fictional reports in this demo workspace" },
+    { label: "Reports Analyzed", value: reports.length, note: "Reports on file for this demo account" },
     { label: "Results Explained", value: analyzed.reduce((n, r) => n + r.length, 0), note: "Each with its range and source shown" },
     { label: "Questions Prepared", value: analyzed.reduce((n, r) => n + buildDoctorQuestions(r).length, 0), note: "Built only from out-of-range results" },
   ];
 }
 
-export function StatsOverview() {
-  const stats = getDemoStats();
+export function StatsOverview({ reports }: { reports: LabReport[] }) {
+  const stats = getDemoStats(reports);
   return (
     <section className="relative isolate overflow-hidden rounded-[2rem] surface-navy p-6 sm:p-10">
       <img
