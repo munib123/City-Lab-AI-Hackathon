@@ -106,6 +106,7 @@ class ChatSource(BaseModel):
 
 
 class ChatResponse(BaseModel):
+    id: str | None = None  # id of the stored chat row (corpus reports only); null if not stored
     report_id: str | None = None
     answer: str
     answer_type: ChatAnswerType

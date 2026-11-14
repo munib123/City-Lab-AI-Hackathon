@@ -22,6 +22,7 @@ from .models import KnowledgeBase, ParsedReport
 from .privacy import PrivacyGuard
 from .report_parser import parse_report_text
 from .schemas import Analysis, ChatResponse
+from .store import Store, get_store
 
 MAX_TEXT = 20_000  # characters of pasted report text
 
@@ -99,6 +100,16 @@ def llm_dependency() -> LLMClient | None:
     return get_llm()
 
 
+def store_dependency() -> Store | None:
+    """Overridable in tests. None means nothing is stored (no Supabase variables)."""
+    return get_store()
+
+
+def _is_corpus_request(req: AnalyzeRequest) -> bool:
+    """Only corpus reports are ever stored. Pasted report text may be a real person's data and is never saved."""
+    return bool(req.report_id and req.report_id.strip())
+
+
 def _report_for(req: AnalyzeRequest) -> ParsedReport:
     if req.report_id and req.report_id.strip():
         report = get_report(req.report_id.strip())
@@ -111,13 +122,22 @@ def _report_for(req: AnalyzeRequest) -> ParsedReport:
     return report
 
 
-def _analyze(req: AnalyzeRequest) -> Analysis:
+def _analyze(req: AnalyzeRequest, store: Store | None = None) -> Analysis:
     kb = load_kb()
     report = _report_for(req)
     try:
-        return enrich(analyze_report(report, kb, age=req.age, sex=req.sex), kb)
+        analysis = enrich(analyze_report(report, kb, age=req.age, sex=req.sex), kb)
     except ValueError as exc:  # invalid demographics that slipped past validation
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    if store is not None and _is_corpus_request(req):
+        store.save_analysis(
+            analysis.report_id or req.report_id.strip(),
+            analysis.patient.age,
+            analysis.patient.sex,
+            analysis.overall,
+            analysis.model_dump(mode="json"),
+        )
+    return analysis
 
 
 # ---------------------------------------------------------------- routes
@@ -132,6 +152,7 @@ def health():
         "llm_enabled": llm.enabled,
         "llm_provider": llm.provider,
         "llm_model": llm.model,
+        "storage_enabled": config.supabase_settings().enabled,
         "kb": {
             "ranges": len(kb.ranges),
             "danger_limits": len(kb.danger),
@@ -155,21 +176,39 @@ def knowledge_base():
 
 
 @app.post("/api/analyze", response_model=Analysis)
-def analyze(req: AnalyzeRequest):
-    return _analyze(req)
+def analyze(req: AnalyzeRequest, store: Store | None = Depends(store_dependency)):
+    return _analyze(req, store)
 
 
 @app.post("/api/analyze/demographics", response_model=Analysis)
-def analyze_with_demographics(req: DemographicsRequest):
-    return _analyze(req)
+def analyze_with_demographics(req: DemographicsRequest, store: Store | None = Depends(store_dependency)):
+    return _analyze(req, store)
 
 
 @app.post("/api/chat", response_model=ChatResponse)
-def chat(req: ChatRequest, llm: LLMClient | None = Depends(llm_dependency)):
+def chat(
+    req: ChatRequest,
+    llm: LLMClient | None = Depends(llm_dependency),
+    store: Store | None = Depends(store_dependency),
+):
     kb = load_kb()
     report = _report_for(req)
     try:
         analysis = enrich(analyze_report(report, kb, age=req.age, sex=req.sex), kb)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
-    return answer_question(req.question, report, analysis, kb, llm, _guard())
+    answer = answer_question(req.question, report, analysis, kb, llm, _guard())
+    if store is not None and _is_corpus_request(req):
+        answer.id = store.log_chat(
+            report_id=analysis.report_id or req.report_id.strip(),
+            question=req.question,
+            answer=answer.answer,
+            answer_type=answer.answer_type,
+            llm_used=answer.llm_used,
+            reading_grade=answer.reading_grade,
+            sources=[s.model_dump(mode="json") for s in answer.sources],
+            model=config.llm_settings().model if answer.llm_used else None,
+            age=analysis.patient.age,
+            sex=analysis.patient.sex,
+        )
+    return answer
