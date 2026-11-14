@@ -20,6 +20,9 @@ python -m venv .venv
 |---|---|---|
 | GET | `/api/health` | status, whether chat is on, KB counts |
 | GET | `/api/reports` | the 14 corpus reports for a picker |
+| GET | `/api/reports/{report_id}` | the analysis of one corpus report (same as POST `/api/analyze`); this is where a QR leads until the frontend address is set |
+| GET | `/api/reports/{report_id}/qr` | QR code image for that report (`?format=svg` default, or `png`) |
+| GET | `/api/reports/{report_id}/link` | `{report_id, url, qr}`: the link the QR encodes |
 | GET | `/api/kb` | all ranges, urgent limits, aliases and rules, each with `{file, line, quote}` |
 | POST | `/api/analyze` | analyse a corpus report (`report_id`) **or** pasted text (`text`) |
 | POST | `/api/analyze/demographics` | same, after the user supplies the missing `age` and/or `sex` |
@@ -27,8 +30,15 @@ python -m venv .venv
 
 ### `GET /api/reports`
 ```json
-[{ "report_id": "P004", "patient_name": "Diana Prince", "result_count": 2 }]
+[{ "report_id": "P004", "patient_name": "Diana Prince", "result_count": 2,
+   "link": "https://<frontend>/reports/P004", "qr": "/api/reports/P004/qr" }]
 ```
+
+### QR codes
+`GET /api/reports/P004/qr` returns an image (use it as `<img src="https://<api>/api/reports/P004/qr">`). Scanning it opens
+`<PUBLIC_APP_URL>/reports/P004`, so the frontend's report page should accept the API id (`P004`, not `report-P004`).
+Until `PUBLIC_APP_URL` is set on the API, the QR opens `<api>/api/reports/P004` (the analysis as JSON), so it always leads
+somewhere that works. Only the 14 corpus reports have a QR; it is not a general QR generator.
 
 ### `POST /api/analyze`
 Send **exactly one** of `report_id` or `text`. `age` and `sex` are optional.
