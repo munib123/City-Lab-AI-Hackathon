@@ -17,6 +17,7 @@ that calls this API (CORS is open by default).
 | `GEMINI_MODEL` | no | default `gemini-2.5-flash` |
 | `GEMINI_FALLBACK_MODEL` | no | default `gemini-2.5-flash-lite`, tried once if the main model is busy, rate-limited or slow. Empty = off |
 | `LLM_PROVIDER` | no | `gemini` (default) or `groq` (then `GROQ_API_KEY`, `GROQ_MODEL`) |
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | for storage | added automatically by the Vercel Supabase integration. Without them nothing is stored and everything else works. `SUPABASE_SECRET_KEY` is used if the service-role key is missing |
 | `CORS_ORIGINS` | no | comma-separated list of allowed frontend origins; default `*` |
 
 Keys are never committed. A test scans the repo for key-shaped strings.

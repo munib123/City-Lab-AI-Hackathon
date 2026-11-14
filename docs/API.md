@@ -108,6 +108,7 @@ Unit conversion example (`conversion`):
 ```
 ```jsonc
 {
+  "id": "0f6c...",             // id of the stored chat row; null when nothing was stored (see "What is stored")
   "report_id": "P002",
   "answer": "Your ALT is 45 U/L. That is inside the range.",
   "answer_type": "answered",   // see below
@@ -134,6 +135,20 @@ Unit conversion example (`conversion`):
 The two refusals work even when chat is switched off (no key), because they are plain code. Every model answer is also
 checked in code before it is returned: its cited ids must exist, it must not sound like a diagnosis, it must not
 mention another patient, and it is checked for reading level (about class 8).
+
+## What is stored
+
+Responses are saved in Supabase (`supabase/migrations/`), **for corpus reports only** (requests that send `report_id`):
+
+| Table | Holds |
+|---|---|
+| `chat_messages` | every chat question and answer, including refusals and "unavailable": answer type, sources, reading grade, model, the age/sex the answer was based on |
+| `analyses` | the latest analysis for each report and age/sex combination (the full `Analysis` JSON; analysing again updates it, no duplicates) |
+
+**Pasted report text (`text`) is never stored**, neither the text nor its analysis nor its chat, because it may be a real
+person's lab results. Storage is best effort: if the database is unavailable the API still answers normally and `id` is null.
+`GET /api/health` shows `"storage_enabled": true` when the database is configured. The tables are only reachable by the
+API server; the public Supabase keys cannot read them.
 
 ## Statuses
 
