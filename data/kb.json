@@ -1,0 +1,454 @@
+{
+  "version": 1,
+  "ranges": [
+    {
+      "id": "R01",
+      "analyte": "Hemoglobin",
+      "aliases": [
+        "Hb"
+      ],
+      "sex": "Male",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 13.8,
+      "high": 17.2,
+      "unit": "g/dL",
+      "qualitative": null,
+      "source": {
+        "file": "4_ranges_hematology.md",
+        "line": 5,
+        "quote": "* Male Demographic (18-100 yrs): 13.8 - 17.2 g/dL"
+      }
+    },
+    {
+      "id": "R02",
+      "analyte": "Hemoglobin",
+      "aliases": [
+        "Hb"
+      ],
+      "sex": "Female",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 12.1,
+      "high": 15.1,
+      "unit": "g/dL",
+      "qualitative": null,
+      "source": {
+        "file": "4_ranges_hematology.md",
+        "line": 6,
+        "quote": "* Female Demographic (18-100 yrs): 12.1 - 15.1 g/dL"
+      }
+    },
+    {
+      "id": "R03",
+      "analyte": "White Blood Cell Count",
+      "aliases": [
+        "WBC"
+      ],
+      "sex": "All",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 4500.0,
+      "high": 11000.0,
+      "unit": "cells/mcL",
+      "qualitative": null,
+      "source": {
+        "file": "4_ranges_hematology.md",
+        "line": 8,
+        "quote": "* All Sexes (18-100 yrs): 4500 - 11000 cells/mcL"
+      }
+    },
+    {
+      "id": "R04",
+      "analyte": "Platelet Count",
+      "aliases": [
+        "PLT"
+      ],
+      "sex": "All",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 150000.0,
+      "high": 450000.0,
+      "unit": "cells/mcL",
+      "qualitative": null,
+      "source": {
+        "file": "4_ranges_hematology.md",
+        "line": 10,
+        "quote": "* All Sexes (18-100 yrs): 150000 - 450000 cells/mcL"
+      }
+    },
+    {
+      "id": "R05",
+      "analyte": "Fasting Blood Sugar",
+      "aliases": [],
+      "sex": "All",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 70.0,
+      "high": 99.0,
+      "unit": "mg/dL",
+      "qualitative": null,
+      "source": {
+        "file": "5_ranges_biochemistry.md",
+        "line": 4,
+        "quote": "| **Fasting Blood Sugar** | All | 18 | 100 | 70 | 99 | mg/dL |"
+      }
+    },
+    {
+      "id": "R06",
+      "analyte": "ALT",
+      "aliases": [],
+      "sex": "Male",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 7.0,
+      "high": 55.0,
+      "unit": "U/L",
+      "qualitative": null,
+      "source": {
+        "file": "5_ranges_biochemistry.md",
+        "line": 5,
+        "quote": "| **ALT** | Male | 18 | 100 | 7 | 55 | U/L |"
+      }
+    },
+    {
+      "id": "R07",
+      "analyte": "ALT",
+      "aliases": [],
+      "sex": "Female",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 7.0,
+      "high": 45.0,
+      "unit": "U/L",
+      "qualitative": null,
+      "source": {
+        "file": "5_ranges_biochemistry.md",
+        "line": 6,
+        "quote": "| **ALT** | Female | 18 | 100 | 7 | 45 | U/L |"
+      }
+    },
+    {
+      "id": "R08",
+      "analyte": "AST",
+      "aliases": [],
+      "sex": "Male",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 8.0,
+      "high": 48.0,
+      "unit": "U/L",
+      "qualitative": null,
+      "source": {
+        "file": "5_ranges_biochemistry.md",
+        "line": 7,
+        "quote": "| **AST** | Male | 18 | 100 | 8 | 48 | U/L |"
+      }
+    },
+    {
+      "id": "R09",
+      "analyte": "AST",
+      "aliases": [],
+      "sex": "Female",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 8.0,
+      "high": 43.0,
+      "unit": "U/L",
+      "qualitative": null,
+      "source": {
+        "file": "5_ranges_biochemistry.md",
+        "line": 8,
+        "quote": "| **AST** | Female | 18 | 100 | 8 | 43 | U/L |"
+      }
+    },
+    {
+      "id": "R10",
+      "analyte": "Cholesterol",
+      "aliases": [],
+      "sex": "All",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 125.0,
+      "high": 200.0,
+      "unit": "mg/dL",
+      "qualitative": null,
+      "source": {
+        "file": "5_ranges_biochemistry.md",
+        "line": 9,
+        "quote": "| **Cholesterol** | All | 18 | 100 | 125 | 200 | mg/dL |"
+      }
+    },
+    {
+      "id": "R11",
+      "analyte": "TSH",
+      "aliases": [],
+      "sex": "All",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 0.4,
+      "high": 4.0,
+      "unit": "mIU/L",
+      "qualitative": null,
+      "source": {
+        "file": "6_ranges_thyroid_urine.md",
+        "line": 2,
+        "quote": "* **TSH**: 0.4 - 4.0 mIU/L (Applicable to All sexes, 18-100 yrs)."
+      }
+    },
+    {
+      "id": "R12",
+      "analyte": "Urine pH",
+      "aliases": [],
+      "sex": "All",
+      "age_min": 18,
+      "age_max": 100,
+      "low": 4.5,
+      "high": 8.0,
+      "unit": "",
+      "qualitative": null,
+      "source": {
+        "file": "6_ranges_thyroid_urine.md",
+        "line": 3,
+        "quote": "* **Urine pH**: 4.5 - 8.0 (Applicable to All sexes, 18-100 yrs)."
+      }
+    },
+    {
+      "id": "R13",
+      "analyte": "Urine Protein",
+      "aliases": [],
+      "sex": "All",
+      "age_min": 18,
+      "age_max": 100,
+      "low": null,
+      "high": null,
+      "unit": "",
+      "qualitative": "Negative",
+      "source": {
+        "file": "6_ranges_thyroid_urine.md",
+        "line": 4,
+        "quote": "* **Urine Protein**: Negative (Applicable to All sexes, 18-100 yrs)."
+      }
+    }
+  ],
+  "danger": [
+    {
+      "id": "D1",
+      "analyte": "Hemoglobin",
+      "condition": "less_than",
+      "threshold": 7.0,
+      "unit": "g/dL",
+      "source": {
+        "file": "3_dangerous_urgent_values.md",
+        "line": 6,
+        "quote": "| **Hemoglobin** | Less than | 7.0 | g/dL |"
+      }
+    },
+    {
+      "id": "D2",
+      "analyte": "Fasting Blood Sugar",
+      "condition": "greater_than",
+      "threshold": 300.0,
+      "unit": "mg/dL",
+      "source": {
+        "file": "3_dangerous_urgent_values.md",
+        "line": 7,
+        "quote": "| **Fasting Blood Sugar** | Greater than | 300 | mg/dL |"
+      }
+    },
+    {
+      "id": "D3",
+      "analyte": "Platelet Count",
+      "condition": "less_than",
+      "threshold": 50000.0,
+      "unit": "cells/mcL",
+      "source": {
+        "file": "3_dangerous_urgent_values.md",
+        "line": 8,
+        "quote": "| **Platelet Count** | Less than | 50000 | cells/mcL |"
+      }
+    },
+    {
+      "id": "D4",
+      "analyte": "ALT",
+      "condition": "greater_than",
+      "threshold": 1000.0,
+      "unit": "U/L",
+      "source": {
+        "file": "3_dangerous_urgent_values.md",
+        "line": 9,
+        "quote": "| **ALT** | Greater than | 1000 | U/L |"
+      }
+    }
+  ],
+  "aliases": [
+    {
+      "alias": "SGPT",
+      "canonical": "ALT",
+      "full_name": "Alanine Aminotransferase",
+      "origin": "files",
+      "source": {
+        "file": "2_medical_glossary.md",
+        "line": 3,
+        "quote": "* **SGPT** is the exact equivalent of **ALT** (Alanine Aminotransferase)."
+      }
+    },
+    {
+      "alias": "SGOT",
+      "canonical": "AST",
+      "full_name": "Aspartate Aminotransferase",
+      "origin": "files",
+      "source": {
+        "file": "2_medical_glossary.md",
+        "line": 4,
+        "quote": "* **SGOT** is the exact equivalent of **AST** (Aspartate Aminotransferase)."
+      }
+    },
+    {
+      "alias": "FBS",
+      "canonical": "Fasting Blood Sugar",
+      "full_name": null,
+      "origin": "files",
+      "source": {
+        "file": "2_medical_glossary.md",
+        "line": 5,
+        "quote": "* **FBS** is the exact equivalent of **Fasting Blood Sugar**."
+      }
+    },
+    {
+      "alias": "Hb",
+      "canonical": "Hemoglobin",
+      "full_name": null,
+      "origin": "files",
+      "source": {
+        "file": "2_medical_glossary.md",
+        "line": 6,
+        "quote": "* **Hb** maps to **Hemoglobin**."
+      }
+    },
+    {
+      "alias": "PLT",
+      "canonical": "Platelet Count",
+      "full_name": null,
+      "origin": "files",
+      "source": {
+        "file": "2_medical_glossary.md",
+        "line": 7,
+        "quote": "* **PLT** maps to **Platelet Count**."
+      }
+    },
+    {
+      "alias": "RBC",
+      "canonical": "Red Blood Cell Count",
+      "full_name": null,
+      "origin": "files",
+      "source": {
+        "file": "2_medical_glossary.md",
+        "line": 8,
+        "quote": "* **RBC** maps to **Red Blood Cell Count**."
+      }
+    },
+    {
+      "alias": "WBC",
+      "canonical": "White Blood Cell Count",
+      "full_name": null,
+      "origin": "files",
+      "source": {
+        "file": "2_medical_glossary.md",
+        "line": 9,
+        "quote": "* **WBC** maps to **White Blood Cell Count**."
+      }
+    },
+    {
+      "alias": "pH Level",
+      "canonical": "Urine pH",
+      "full_name": null,
+      "origin": "team",
+      "source": null
+    },
+    {
+      "alias": "Protein",
+      "canonical": "Urine Protein",
+      "full_name": null,
+      "origin": "team",
+      "source": null
+    }
+  ],
+  "safety_rules": [
+    {
+      "id": "privacy",
+      "title": "PRIVACY AND DATA PROTECTION",
+      "text": "Never disclose another patient's records. You must operate under a strict context-lock. Only answer questions regarding the specific patient report currently under discussion. If a user asks about another patient, you must definitively refuse the request.",
+      "source": {
+        "file": "1_lab_safety_rules.md",
+        "line": 3,
+        "quote": "1. **PRIVACY AND DATA PROTECTION**: Never disclose another patient's records. You must operate under a strict context-lock. Only answer questions regarding the specific patient report currently under discussion. If a user asks about another patient, you must definitively refuse the request."
+      }
+    },
+    {
+      "id": "no_diagnosis",
+      "title": "NO DIAGNOSTIC AUTHORITY",
+      "text": "Never state that a patient has a specific disease (e.g., \"you have diabetes\"). Your role is solely to explain the numerical values in layman's terms. You must repeatedly and explicitly state that only a licensed medical doctor can diagnose conditions.",
+      "source": {
+        "file": "1_lab_safety_rules.md",
+        "line": 4,
+        "quote": "2. **NO DIAGNOSTIC AUTHORITY**: Never state that a patient has a specific disease (e.g., \"you have diabetes\"). Your role is solely to explain the numerical values in layman's terms. You must repeatedly and explicitly state that only a licensed medical doctor can diagnose conditions."
+      }
+    },
+    {
+      "id": "missing_demographics",
+      "title": "MISSING DEMOGRAPHICS PROTOCOL",
+      "text": "Patient normal ranges are highly dependent on biological age and sex at birth. If age or sex is missing from a report, DO NOT GUESS based on the patient's name or other context clues. You must state that the right normal range cannot be chosen and explicitly ask the user to provide the missing demographic information before proceeding.",
+      "source": {
+        "file": "1_lab_safety_rules.md",
+        "line": 5,
+        "quote": "3. **MISSING DEMOGRAPHICS PROTOCOL**: Patient normal ranges are highly dependent on biological age and sex at birth. If age or sex is missing from a report, DO NOT GUESS based on the patient's name or other context clues. You must state that the right normal range cannot be chosen and explicitly ask the user to provide the missing demographic information before proceeding."
+      }
+    },
+    {
+      "id": "unknown_tests",
+      "title": "UNKNOWN TESTS",
+      "text": "If a test has no matching range in the provided reference sheets, or uses a unit of measurement that cannot be mathematically converted, you must mark it as \"cannot be classified from the files\". Do not hallucinate reference ranges.",
+      "source": {
+        "file": "1_lab_safety_rules.md",
+        "line": 6,
+        "quote": "4. **UNKNOWN TESTS**: If a test has no matching range in the provided reference sheets, or uses a unit of measurement that cannot be mathematically converted, you must mark it as \"cannot be classified from the files\". Do not hallucinate reference ranges."
+      }
+    }
+  ],
+  "directives": [
+    {
+      "key": "danger_inclusive",
+      "text": "When a patient's results hit or pass these specific thresholds, the assistant MUST add a severe warning to the output (e.g., \"see a doctor today\") and prioritize generating questions for the physician.",
+      "source": {
+        "file": "3_dangerous_urgent_values.md",
+        "line": 2,
+        "quote": "When a patient's results hit or pass these specific thresholds, the assistant MUST add a severe warning to the output (e.g., \"see a doctor today\") and prioritize generating questions for the physician."
+      }
+    },
+    {
+      "key": "boundary_normal",
+      "text": "**Edge Case Rule**: If a patient's analytical value sits **exactly** on a lower or upper range limit, the algorithmic classification MUST mark it as **NORMAL**. Age boundaries are inclusive of the upper bound.",
+      "source": {
+        "file": "4_ranges_hematology.md",
+        "line": 2,
+        "quote": "**Edge Case Rule**: If a patient's analytical value sits **exactly** on a lower or upper range limit, the algorithmic classification MUST mark it as **NORMAL**. Age boundaries are inclusive of the upper bound."
+      }
+    },
+    {
+      "key": "age_upper_inclusive",
+      "text": "**Edge Case Rule**: If a patient's analytical value sits **exactly** on a lower or upper range limit, the algorithmic classification MUST mark it as **NORMAL**. Age boundaries are inclusive of the upper bound.",
+      "source": {
+        "file": "4_ranges_hematology.md",
+        "line": 2,
+        "quote": "**Edge Case Rule**: If a patient's analytical value sits **exactly** on a lower or upper range limit, the algorithmic classification MUST mark it as **NORMAL**. Age boundaries are inclusive of the upper bound."
+      }
+    }
+  ],
+  "urgent_phrase": "see a doctor today",
+  "noise": {
+    "files_scanned": 20,
+    "repeated_paragraphs": 7,
+    "lines_ignored": 1373
+  }
+}
