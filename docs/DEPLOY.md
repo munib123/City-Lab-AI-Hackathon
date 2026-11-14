@@ -9,6 +9,29 @@ that calls this API (CORS is open by default).
 | **Vercel** (live link) | root `index.py` + `vercel.json` (`framework: fastapi`, region `bom1`). Deps come from `pyproject.toml` |
 | **Docker** (README fallback) | `Dockerfile` + `docker-compose.yml` |
 
+## Two Vercel projects, one repo
+
+Both projects are connected to `munib123/City-Lab-AI-Hackathon` (production branch `main`), so every merge to `main` deploys
+both automatically, and every PR branch gets a preview of each.
+
+| Project | Root directory | What it serves | Address |
+|---|---|---|---|
+| `bahria_isl_ai` | `frontend` | the UI (TanStack Start / Lovable app) | https://bahriaislai.vercel.app (the link to share) |
+| `medlens-api` | `/` (repo root) | the FastAPI backend | https://medlens-api-delta.vercel.app |
+
+Why two: one is a Node app and the other is Python, and Vercel builds one framework per project.
+
+**The frontend must be built with `NITRO_PRESET=vercel`.** The Lovable setup builds for Cloudflare by default, and that output
+cannot be served by Vercel (the deployment looks empty). `frontend/vercel.json` sets the preset and pins `npm ci`, because the
+folder has both `bun.lock` and `package-lock.json`.
+
+Environment variables are per project. The API project holds `GEMINI_API_KEY`, `SUPABASE_URL` and
+`SUPABASE_SERVICE_ROLE_KEY` (the frontend does not need them). After the frontend calls the API, set `PUBLIC_APP_URL` on the
+API project to `https://bahriaislai.vercel.app` so QR codes open the frontend (its report page must accept ids like `P004`).
+
+On Vercel's free (Hobby) plan, a Git deployment can be blocked when the commit author is not on the Vercel team. Merging through a
+pull request from the team owner's account avoids that; direct pushes to `main` from other accounts may not deploy.
+
 ## Environment variables
 
 | Name | Needed | What |
