@@ -53,6 +53,25 @@ class Conversion(BaseModel):
     note: str = ""
 
 
+class Explanation(BaseModel):
+    measures: str  # what the test measures, in simple words
+    meaning: str | None = None  # what a low/high result can mean; None when the result is normal
+    label: str  # always says this is general information, not from the lab's files
+    origin: Literal["team"] = "team"
+
+
+class UrgentItem(BaseModel):
+    test: str
+    value: str
+    reason: str
+
+
+class UrgentBanner(BaseModel):
+    title: str
+    message: str
+    items: list[UrgentItem]
+
+
 class ResultAnalysis(BaseModel):
     raw_name: str
     canonical_name: str | None = None
@@ -70,6 +89,7 @@ class ResultAnalysis(BaseModel):
     needs: list[Literal["age", "sex"]] = Field(default_factory=list)
     reason: str
     source: Source  # the line of the report this result came from
+    explanation: Explanation | None = None  # added by explain.enrich
 
 
 class Patient(BaseModel):
@@ -86,3 +106,8 @@ class Analysis(BaseModel):
     results: list[ResultAnalysis]
     missing_demographics: list[Literal["age", "sex"]] = Field(default_factory=list)
     demographics_source: dict[str, DemographicSource]
+    # Filled in by explain.enrich (the engine alone leaves them empty):
+    urgent_banner: UrgentBanner | None = None
+    doctor_questions: list[str] = Field(default_factory=list)
+    demographics_prompt: str | None = None
+    disclaimer: str = ""
