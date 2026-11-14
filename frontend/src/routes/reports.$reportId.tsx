@@ -12,6 +12,7 @@ import { UrgentAlert } from "@/components/report/UrgentAlert";
 import { TestResultItem } from "@/components/report/TestResultItem";
 import { DoctorQuestions } from "@/components/report/DoctorQuestions";
 import { SourceDocuments } from "@/components/report/SourceDocuments";
+import { ClinicalHighlightsBoard } from "@/components/report/ClinicalHighlightsBoard";
 import { CityLabAssistantChat } from "@/components/report/CityLabAssistantChat";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -251,6 +252,9 @@ function ReportAnalysis() {
           </div>
         </aside>
       </div>
+
+      {/* Clinical Highlights Board (Inspired by presentation design: Medallions + Journey Roadmap) */}
+      <ClinicalHighlightsBoard report={activeReport} results={results} />
 
       {/* Doctor Questions */}
       <DoctorQuestions questions={questions} />
