@@ -38,7 +38,11 @@ def test_reports_lists_the_fourteen_corpus_reports():
     assert r.status_code == 200
     items = r.json()
     assert [i["report_id"] for i in items] == [f"P{n:03d}" for n in range(1, 15)]
-    assert items[3] == {"report_id": "P004", "patient_name": "Diana Prince", "result_count": 2}
+    assert items[3] == {
+        "report_id": "P004", "patient_name": "Diana Prince", "result_count": 2,
+        "link": "http://testserver/api/reports/P004",  # until PUBLIC_APP_URL points at the frontend
+        "qr": "/api/reports/P004/qr",
+    }
 
 
 def test_kb_endpoint_exposes_ranges_with_sources():
