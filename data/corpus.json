@@ -1,0 +1,404 @@
+[
+  {
+    "report_id": "P001",
+    "file": "report_P001_Alice_Smith_CBC.md",
+    "patient_name": "Alice Smith",
+    "mrn": "CLD-P001-9942",
+    "issued": "2026-11-13",
+    "age": 28,
+    "age_state": "ok",
+    "sex": "Female",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "Hemoglobin",
+        "value_text": "13.5",
+        "value": 13.5,
+        "unit": "g/dL",
+        "source": {
+          "file": "report_P001_Alice_Smith_CBC.md",
+          "line": 12,
+          "quote": "- Hemoglobin: 13.5 g/dL"
+        }
+      },
+      {
+        "raw_name": "WBC",
+        "value_text": "6000",
+        "value": 6000.0,
+        "unit": "cells/mcL",
+        "source": {
+          "file": "report_P001_Alice_Smith_CBC.md",
+          "line": 13,
+          "quote": "- WBC: 6000 cells/mcL"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P002",
+    "file": "report_P002_Bob_Jones_Liver.md",
+    "patient_name": "Bob Jones",
+    "mrn": "CLD-P002-9942",
+    "issued": "2026-11-13",
+    "age": 35,
+    "age_state": "ok",
+    "sex": "Female",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "SGPT",
+        "value_text": "45",
+        "value": 45.0,
+        "unit": "U/L",
+        "source": {
+          "file": "report_P002_Bob_Jones_Liver.md",
+          "line": 14,
+          "quote": "| SGPT | 45 | U/L |"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P003",
+    "file": "report_P003_Charlie_Brown_Sugar_NoDemo.md",
+    "patient_name": "Charlie Brown",
+    "mrn": "CLD-P003-9942",
+    "issued": "2026-11-13",
+    "age": null,
+    "age_state": "corrupted",
+    "sex": null,
+    "sex_state": "corrupted",
+    "results": [
+      {
+        "raw_name": "Fasting Blood Sugar",
+        "value_text": "110",
+        "value": 110.0,
+        "unit": "mg/dL",
+        "source": {
+          "file": "report_P003_Charlie_Brown_Sugar_NoDemo.md",
+          "line": 12,
+          "quote": "Test Conducted: Fasting Blood Sugar | Value Recorded: 110 mg/dL"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P004",
+    "file": "report_P004_Diana_Prince_Hem_Urgent.md",
+    "patient_name": "Diana Prince",
+    "mrn": "CLD-P004-9942",
+    "issued": "2026-11-13",
+    "age": 42,
+    "age_state": "ok",
+    "sex": "Female",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "Hemoglobin",
+        "value_text": "6.5",
+        "value": 6.5,
+        "unit": "g/dL",
+        "source": {
+          "file": "report_P004_Diana_Prince_Hem_Urgent.md",
+          "line": 12,
+          "quote": "* **Hemoglobin**: 6.5 g/dL"
+        }
+      },
+      {
+        "raw_name": "Platelet Count",
+        "value_text": "120000",
+        "value": 120000.0,
+        "unit": "cells/mcL",
+        "source": {
+          "file": "report_P004_Diana_Prince_Hem_Urgent.md",
+          "line": 13,
+          "quote": "* **Platelet Count**: 120000 cells/mcL"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P005",
+    "file": "report_P005_Ethan_Hunt_Sugar_UnitConv.md",
+    "patient_name": "Ethan Hunt",
+    "mrn": "CLD-P005-9942",
+    "issued": "2026-11-13",
+    "age": 50,
+    "age_state": "ok",
+    "sex": "Male",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "Fasting Blood Sugar",
+        "value_text": "6.0",
+        "value": 6.0,
+        "unit": "mmol/L",
+        "source": {
+          "file": "report_P005_Ethan_Hunt_Sugar_UnitConv.md",
+          "line": 12,
+          "quote": "- **Fasting Blood Sugar**: 6.0 mmol/L"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P006",
+    "file": "report_P006_Fiona_UnknownTest.md",
+    "patient_name": "Fiona Gallagher",
+    "mrn": "CLD-P006-9942",
+    "issued": "2026-11-13",
+    "age": 22,
+    "age_state": "ok",
+    "sex": "Female",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "Serum Ferritin",
+        "value_text": "25",
+        "value": 25.0,
+        "unit": "ng/mL",
+        "source": {
+          "file": "report_P006_Fiona_UnknownTest.md",
+          "line": 12,
+          "quote": "- **Serum Ferritin**: 25 ng/mL"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P007",
+    "file": "report_P007_George_Thyroid.md",
+    "patient_name": "George Costanza",
+    "mrn": "CLD-P007-9942",
+    "issued": "2026-11-13",
+    "age": 65,
+    "age_state": "ok",
+    "sex": "Male",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "TSH",
+        "value_text": "2.5",
+        "value": 2.5,
+        "unit": "mIU/L",
+        "source": {
+          "file": "report_P007_George_Thyroid.md",
+          "line": 12,
+          "quote": "TSH: 2.5 mIU/L"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P008",
+    "file": "report_P008_Haley_Urine.md",
+    "patient_name": "Haley Dunphy",
+    "mrn": "CLD-P008-9942",
+    "issued": "2026-11-13",
+    "age": 19,
+    "age_state": "ok",
+    "sex": "Female",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "pH Level",
+        "value_text": "5.5",
+        "value": 5.5,
+        "unit": "",
+        "source": {
+          "file": "report_P008_Haley_Urine.md",
+          "line": 12,
+          "quote": "* pH Level -> 5.5"
+        }
+      },
+      {
+        "raw_name": "Protein",
+        "value_text": "Negative",
+        "value": null,
+        "unit": "",
+        "source": {
+          "file": "report_P008_Haley_Urine.md",
+          "line": 13,
+          "quote": "* Protein -> Negative"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P009",
+    "file": "report_P009_Ian_Liver_High.md",
+    "patient_name": "Ian Malcolm",
+    "mrn": "CLD-P009-9942",
+    "issued": "2026-11-13",
+    "age": 48,
+    "age_state": "ok",
+    "sex": "Male",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "ALT",
+        "value_text": "85",
+        "value": 85.0,
+        "unit": "U/L",
+        "source": {
+          "file": "report_P009_Ian_Liver_High.md",
+          "line": 14,
+          "quote": "| ALT | 85 | U/L |"
+        }
+      },
+      {
+        "raw_name": "AST",
+        "value_text": "60",
+        "value": 60.0,
+        "unit": "U/L",
+        "source": {
+          "file": "report_P009_Ian_Liver_High.md",
+          "line": 15,
+          "quote": "| AST | 60 | U/L |"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P010",
+    "file": "report_P010_Julia_Cholesterol.md",
+    "patient_name": "Julia Child",
+    "mrn": "CLD-P010-9942",
+    "issued": "2026-11-13",
+    "age": 55,
+    "age_state": "ok",
+    "sex": "Female",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "Cholesterol",
+        "value_text": "200",
+        "value": 200.0,
+        "unit": "mg/dL",
+        "source": {
+          "file": "report_P010_Julia_Cholesterol.md",
+          "line": 12,
+          "quote": "- **Cholesterol**: 200 mg/dL"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P011",
+    "file": "report_P011_Kevin_CBC.md",
+    "patient_name": "Kevin Hart",
+    "mrn": "CLD-P011-9942",
+    "issued": "2026-11-13",
+    "age": 40,
+    "age_state": "ok",
+    "sex": "Male",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "WBC",
+        "value_text": "12000",
+        "value": 12000.0,
+        "unit": "cells/mcL",
+        "source": {
+          "file": "report_P011_Kevin_CBC.md",
+          "line": 12,
+          "quote": "* **WBC**: 12000 cells/mcL"
+        }
+      },
+      {
+        "raw_name": "PLT",
+        "value_text": "140000",
+        "value": 140000.0,
+        "unit": "cells/mcL",
+        "source": {
+          "file": "report_P011_Kevin_CBC.md",
+          "line": 13,
+          "quote": "* **PLT**: 140000 cells/mcL"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P012",
+    "file": "report_P012_Laura_AST_MissingSex.md",
+    "patient_name": "Laura Croft",
+    "mrn": "CLD-P012-9942",
+    "issued": "2026-11-13",
+    "age": 32,
+    "age_state": "ok",
+    "sex": null,
+    "sex_state": "missing",
+    "results": [
+      {
+        "raw_name": "AST",
+        "value_text": "44",
+        "value": 44.0,
+        "unit": "U/L",
+        "source": {
+          "file": "report_P012_Laura_AST_MissingSex.md",
+          "line": 12,
+          "quote": "Test: AST | Result: 44 U/L"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P013",
+    "file": "report_P013_Michael_Sugar_Urgent.md",
+    "patient_name": "Michael Scott",
+    "mrn": "CLD-P013-9942",
+    "issued": "2026-11-13",
+    "age": 45,
+    "age_state": "ok",
+    "sex": "Male",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "Fasting Blood Sugar",
+        "value_text": "350",
+        "value": 350.0,
+        "unit": "mg/dL",
+        "source": {
+          "file": "report_P013_Michael_Sugar_Urgent.md",
+          "line": 12,
+          "quote": "- **Fasting Blood Sugar**: 350 mg/dL"
+        }
+      }
+    ]
+  },
+  {
+    "report_id": "P014",
+    "file": "report_P014_Nancy_Multiple.md",
+    "patient_name": "Nancy Drew",
+    "mrn": "CLD-P014-9942",
+    "issued": "2026-11-13",
+    "age": 29,
+    "age_state": "ok",
+    "sex": "Female",
+    "sex_state": "ok",
+    "results": [
+      {
+        "raw_name": "FBS",
+        "value_text": "85",
+        "value": 85.0,
+        "unit": "mg/dL",
+        "source": {
+          "file": "report_P014_Nancy_Multiple.md",
+          "line": 12,
+          "quote": "* **FBS**: 85 mg/dL"
+        }
+      },
+      {
+        "raw_name": "SGOT",
+        "value_text": "22",
+        "value": 22.0,
+        "unit": "U/L",
+        "source": {
+          "file": "report_P014_Nancy_Multiple.md",
+          "line": 13,
+          "quote": "* **SGOT**: 22 U/L"
+        }
+      }
+    ]
+  }
+]
