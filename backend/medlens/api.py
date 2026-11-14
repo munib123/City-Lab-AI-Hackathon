@@ -7,7 +7,7 @@ from typing import Literal
 
 from functools import lru_cache
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -20,6 +20,7 @@ from .kb import load_kb
 from .llm import LLMClient, get_llm
 from .models import KnowledgeBase, ParsedReport
 from .privacy import PrivacyGuard
+from .qr import make_qr, report_link
 from .report_parser import parse_report_text
 from .schemas import Analysis, ChatResponse
 from .store import Store, get_store
@@ -162,12 +163,48 @@ def health():
     }
 
 
+def _link(report_id: str, request: Request) -> str:
+    return report_link(report_id, config.public_app_url(), str(request.base_url))
+
+
+def _require_corpus_report(report_id: str) -> None:
+    if get_report(report_id) is None:
+        raise HTTPException(status_code=404, detail=f"No report with id {report_id!r}.")
+
+
 @app.get("/api/reports")
-def list_reports():
+def list_reports(request: Request):
     return [
-        {"report_id": r.report_id, "patient_name": r.patient_name, "result_count": len(r.results)}
+        {
+            "report_id": r.report_id,
+            "patient_name": r.patient_name,
+            "result_count": len(r.results),
+            "link": _link(r.report_id, request),
+            "qr": f"/api/reports/{r.report_id}/qr",
+        }
         for r in load_corpus()
     ]
+
+
+@app.get("/api/reports/{report_id}", response_model=Analysis)
+def get_report_analysis(report_id: str, store: Store | None = Depends(store_dependency)):
+    """Read-only page for one corpus report (this is where a QR leads until the frontend address is set)."""
+    _require_corpus_report(report_id)
+    return _analyze(AnalyzeRequest(report_id=report_id), store)
+
+
+@app.get("/api/reports/{report_id}/link")
+def report_link_info(report_id: str, request: Request):
+    _require_corpus_report(report_id)
+    return {"report_id": report_id, "url": _link(report_id, request), "qr": f"/api/reports/{report_id}/qr"}
+
+
+@app.get("/api/reports/{report_id}/qr")
+def report_qr(report_id: str, request: Request, format: Literal["svg", "png"] = "svg"):
+    """QR code image that opens this report. Only corpus reports get one (this is not a general QR generator)."""
+    _require_corpus_report(report_id)
+    data, media_type = make_qr(_link(report_id, request), fmt=format)
+    return Response(content=data, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
 
 
 @app.get("/api/kb", response_model=KnowledgeBase)
