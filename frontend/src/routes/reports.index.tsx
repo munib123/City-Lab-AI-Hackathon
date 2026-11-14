@@ -52,8 +52,8 @@ function MyReports() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="eyebrow text-primary">Patient {DEMO_PATIENT_ID}</p>
-          <h2 className="mt-2 font-display text-3xl font-light sm:text-4xl text-navy">
-            My <span className="font-semibold">Reports</span>
+          <h2 className="mt-2 font-display text-3xl font-bold sm:text-4xl text-navy">
+            My Reports
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Personal laboratory panels for Alice Smith. Only records for this active patient context are listed.
