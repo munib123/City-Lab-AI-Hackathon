@@ -18,6 +18,9 @@ that calls this API (CORS is open by default).
 | `GEMINI_FALLBACK_MODEL` | no | default `gemini-2.5-flash-lite`, tried once if the main model is busy, rate-limited or slow. Empty = off |
 | `LLM_PROVIDER` | no | `gemini` (default) or `groq` (then `GROQ_API_KEY`, `GROQ_MODEL`) |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | for storage | added automatically by the Vercel Supabase integration. Without them nothing is stored and everything else works. `SUPABASE_SECRET_KEY` is used if the service-role key is missing |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_EMAIL`, `SMTP_APP_PASSWORD` | for email | Gmail SMTP (`smtp.gmail.com`, `587`, the sending address, and a Gmail **app password**). Without them `/api/email` answers 503. Set the password as a Sensitive variable on the API project only |
+| `EMAIL_DAILY_LIMIT` | no | total emails per day, default 100 (Gmail's own limit is about 500) |
+| `EMAIL_HASH_SALT` | no | salt for the hashes in `email_log`; defaults to a hash of the Supabase key |
 | `PUBLIC_APP_URL` | no | the frontend's public address, e.g. `https://my-frontend.vercel.app`. QR codes open `<PUBLIC_APP_URL>/reports/<id>`. Unset = QR opens the API's own report page |
 | `TTS_VOICE` | no | default read-aloud voice, one of the list in `docs/API.md`. Default `en-US-AriaNeural` |
 | `CORS_ORIGINS` | no | comma-separated list of allowed frontend origins; default `*` |
