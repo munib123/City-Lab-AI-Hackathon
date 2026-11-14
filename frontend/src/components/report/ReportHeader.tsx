@@ -1,11 +1,14 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, CheckCircle2, Download, Info, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DEMO_REPORTS } from "@/data/demo-reports";
 import type { LabReport } from "@/data/types";
 import { formatDate } from "@/lib/format";
 
 export function ReportHeader({ report, onDownload }: { report: LabReport; onDownload: () => void }) {
   const { patient } = report;
+  const navigate = useNavigate();
+
   return (
     <header className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -14,9 +17,23 @@ export function ReportHeader({ report, onDownload }: { report: LabReport; onDown
             <ArrowLeft /> Back to Reports
           </Link>
         </Button>
-        <Button variant="hero" size="pill" onClick={onDownload}>
-          <Download /> Download Report
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={report.id}
+            onChange={(e) => navigate({ to: "/reports/$reportId", params: { reportId: e.target.value } })}
+            aria-label="Switch patient report"
+            className="h-10 rounded-full border bg-card px-3.5 text-xs font-semibold text-foreground outline-none shadow-sm hover:border-primary/50 cursor-pointer"
+          >
+            {DEMO_REPORTS.map((r, i) => (
+              <option key={r.id} value={r.id}>
+                P{String(i + 1).padStart(2, "0")}: {r.patient.name} ({r.name})
+              </option>
+            ))}
+          </select>
+          <Button variant="hero" size="pill" onClick={onDownload}>
+            <Download /> Download Report
+          </Button>
+        </div>
       </div>
 
       <div>

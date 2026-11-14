@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { FileQuestion, Info, AlertTriangle, Users, Check } from "lucide-react";
+import { FileQuestion, Info, AlertTriangle, Check, MessageSquare, X } from "lucide-react";
 import { DEMO_REPORTS, getDemoReport } from "@/data/demo-reports";
 import { analyzeReport, countStatuses, CANNOT_CLASSIFY } from "@/lib/analysis";
 import { buildDoctorQuestions } from "@/lib/questions";
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/reports/$reportId")({
     return { report };
   },
   head: ({ loaderData }) => {
-    const title = loaderData ? `${loaderData.report.name} — CityLab Explainer` : "Report unavailable — CityLab Explainer";
+    const title = loaderData ? `${loaderData.report.name} — LabSense AI` : "Report unavailable — LabSense AI";
     const description = "Each lab result explained in plain language, with its reference range, source and questions for your doctor.";
     return {
       meta: [
@@ -44,12 +44,12 @@ function ReportNotFound() {
   return (
     <div className="mx-auto max-w-md py-24 text-center">
       <FileQuestion className="mx-auto h-10 w-10 text-primary" strokeWidth={1.5} />
-      <h2 className="mt-4 font-display text-2xl font-semibold">Report not found</h2>
+      <h2 className="mt-4 font-display text-2xl font-semibold">Report not available</h2>
       <p className="mt-2 text-sm text-muted-foreground">
         This report doesn't exist or is locked under patient privacy directives.
       </p>
       <Link to="/reports" className="mt-6 inline-block text-sm font-semibold text-primary hover:underline">
-        Back to Reports Directory
+        Back to My Reports
       </Link>
     </div>
   );
@@ -71,6 +71,7 @@ function ReportAnalysis() {
   const [activeReport, setActiveReport] = useState<LabReport>(initialReport);
   const [overrideAge, setOverrideAge] = useState<string>(initialReport.patient.age !== null ? String(initialReport.patient.age) : "");
   const [overrideSex, setOverrideSex] = useState<Sex | "">(initialReport.patient.sex ?? "");
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Sync if route changes
   useEffect(() => {
@@ -131,56 +132,20 @@ function ReportAnalysis() {
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-8">
-      {/* Quick Patient Switcher Bar for Hackathon Demos */}
-      <div className="rounded-2xl border bg-card p-4 shadow-soft">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-primary" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Select CityLab Case (P001 – P014):
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-1.5">
-            {DEMO_REPORTS.map((r, idx) => {
-              const isCurrent = r.id === activeReport.id;
-              const num = String(idx + 1).padStart(2, "0");
-              return (
-                <button
-                  key={r.id}
-                  onClick={() => navigate({ to: "/reports/$reportId", params: { reportId: r.id } })}
-                  className={cn(
-                    "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors",
-                    isCurrent
-                      ? "bg-primary text-primary-foreground font-bold shadow-sm"
-                      : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-                  )}
-                  title={`${r.patient.name} (${r.name})`}
-                >
-                  P{num}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
+      {/* Patient Header */}
       <ReportHeader report={activeReport} onDownload={() => downloadReportSummary(activeReport, results, questions)} />
 
-      {/* Interactive Missing Demographics Resolver */}
+      {/* Interactive Missing Demographics Resolver (Sleek Alert) */}
       {isMissingDemographics && (
-        <div className="rounded-2xl border-2 border-amber-500/40 bg-amber-500/10 p-5 shadow-sm space-y-3">
-          <div className="flex items-center gap-2.5">
-            <AlertTriangle className="h-5 w-5 text-amber-700 dark:text-amber-400 shrink-0" />
-            <h3 className="font-display font-semibold text-amber-950 dark:text-amber-200">
-              CityLab Missing Demographics Protocol (Rule 3)
+        <div className="rounded-2xl border border-abnormal bg-abnormal-soft p-5 text-sm space-y-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-abnormal-ink shrink-0" />
+            <h3 className="font-semibold text-foreground">
+              Missing Patient Demographics (Age / Biological Sex Required)
             </h3>
           </div>
-          <p className="text-sm text-amber-900/90 dark:text-amber-300">
-            This patient's report is missing required demographics (
-            {activeReport.patient.age === null && "Age"}
-            {activeReport.patient.age === null && activeReport.patient.sex === null && " & "}
-            {activeReport.patient.sex === null && "Biological Sex"}
-            ). The system refuses to guess. Enter the missing demographics below to dynamically select the correct reference range:
+          <p className="text-muted-foreground">
+            In accordance with CityLab reference range rules, the engine will not guess. Enter the patient's demographics below to apply the correct reference intervals:
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-1">
             <div className="flex items-center gap-2">
@@ -216,19 +181,22 @@ function ReportAnalysis() {
         </div>
       )}
 
+      {/* Urgent Alerts */}
       {urgent.map((r) => (
         <UrgentAlert key={r.id} result={r} onReview={() => review(r.id)} />
       ))}
 
+      {/* Summary Cards */}
       <ReportSummary counts={counts} />
 
+      {/* Main Results Table & Right Sidebar */}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section>
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h3 className="font-display text-xl font-semibold">Individual results</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Verified against CityLab reference intervals. Click any test to view Grade-8 explanation & range bars.
+                Verified against CityLab reference intervals. Select a test to see its explanation.
               </p>
             </div>
             <div className="flex flex-wrap gap-1 rounded-full border bg-card p-1" role="tablist" aria-label="Filter results">
@@ -275,7 +243,7 @@ function ReportAnalysis() {
           <SourceDocuments results={results} />
           <div className="rounded-2xl border border-dashed bg-card/60 p-5 text-xs leading-relaxed text-muted-foreground">
             <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <Info className="h-4 w-4 text-primary" /> CityLab File Grounding
+              <Info className="h-4 w-4 text-primary" /> When files don't cover it
             </p>
             <p className="mt-2">
               Results show <span className="font-semibold text-foreground">“{CANNOT_CLASSIFY}”</span> when an analyte is absent from reference sheets, has an unconvertible unit, or demographics are missing.
@@ -284,10 +252,41 @@ function ReportAnalysis() {
         </aside>
       </div>
 
-      {/* Grounded Interactive Q&A Assistant */}
-      <CityLabAssistantChat report={activeReport} results={results} />
-
+      {/* Doctor Questions */}
       <DoctorQuestions questions={questions} />
+
+      {/* Floating Ask CityLab AI Action Button */}
+      <div className="fixed bottom-6 right-6 z-50">
+        {!chatOpen ? (
+          <Button
+            size="lg"
+            variant="hero"
+            onClick={() => setChatOpen(true)}
+            className="rounded-full shadow-elevated flex items-center gap-2 px-5 py-6 text-sm font-semibold"
+          >
+            <MessageSquare className="h-5 w-5" />
+            <span>Ask CityLab Assistant</span>
+          </Button>
+        ) : (
+          <div className="w-[380px] sm:w-[440px] max-h-[85vh] overflow-hidden rounded-2xl border bg-card shadow-elevated flex flex-col">
+            <div className="flex items-center justify-between p-3.5 border-b bg-muted/50">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-normal animate-pulse" />
+                <span className="text-xs font-semibold text-foreground">CityLab Grounded Assistant</span>
+              </div>
+              <button
+                onClick={() => setChatOpen(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-md"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="p-3 overflow-y-auto max-h-[70vh]">
+              <CityLabAssistantChat report={activeReport} results={results} />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

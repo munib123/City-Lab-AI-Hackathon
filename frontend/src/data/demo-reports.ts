@@ -206,7 +206,19 @@ export function setActivePatientId(id: string) {
 }
 
 export function getDemoReport(id: string): LabReport | undefined {
-  return DEMO_REPORTS.find((r) => r.id === id);
+  if (!id) return DEMO_REPORTS[0];
+  const cleanId = id.trim().toLowerCase();
+  return DEMO_REPORTS.find((r) => {
+    if (r.id.toLowerCase() === cleanId) return true;
+    if (r.patient.id.toLowerCase() === cleanId) return true;
+    const numMatch = cleanId.match(/(\d+)/);
+    if (numMatch) {
+      const targetNum = parseInt(numMatch[1], 10);
+      const repNumMatch = r.id.match(/(\d+)/);
+      if (repNumMatch && parseInt(repNumMatch[1], 10) === targetNum) return true;
+    }
+    return false;
+  }) ?? DEMO_REPORTS[0];
 }
 
 export const SAMPLE_REPORT_ID = "report-P001";
