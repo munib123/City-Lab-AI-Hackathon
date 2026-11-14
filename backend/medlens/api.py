@@ -5,18 +5,23 @@ from __future__ import annotations
 import os
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from functools import lru_cache
+
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from . import __version__, config
+from .chat import answer_question
 from .corpus import get_report, load_corpus
 from .engine import analyze_report
 from .explain import enrich
 from .kb import load_kb
+from .llm import LLMClient, get_llm
 from .models import KnowledgeBase, ParsedReport
+from .privacy import PrivacyGuard
 from .report_parser import parse_report_text
-from .schemas import Analysis
+from .schemas import Analysis, ChatResponse
 
 MAX_TEXT = 20_000  # characters of pasted report text
 
@@ -71,7 +76,28 @@ class DemographicsRequest(AnalyzeRequest):
         return self
 
 
+class ChatRequest(AnalyzeRequest):
+    question: str = Field(min_length=1, max_length=500)
+
+    @field_validator("question")
+    @classmethod
+    def question_not_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("question must not be blank")
+        return v.strip()
+
+
 # ---------------------------------------------------------------- helpers
+
+@lru_cache(maxsize=1)
+def _guard() -> PrivacyGuard:
+    return PrivacyGuard(load_corpus())
+
+
+def llm_dependency() -> LLMClient | None:
+    """Overridable in tests. None means chat is switched off (no API key)."""
+    return get_llm()
+
 
 def _report_for(req: AnalyzeRequest) -> ParsedReport:
     if req.report_id and req.report_id.strip():
@@ -135,3 +161,14 @@ def analyze(req: AnalyzeRequest):
 @app.post("/api/analyze/demographics", response_model=Analysis)
 def analyze_with_demographics(req: DemographicsRequest):
     return _analyze(req)
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+def chat(req: ChatRequest, llm: LLMClient | None = Depends(llm_dependency)):
+    kb = load_kb()
+    report = _report_for(req)
+    try:
+        analysis = enrich(analyze_report(report, kb, age=req.age, sex=req.sex), kb)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return answer_question(req.question, report, analysis, kb, llm, _guard())

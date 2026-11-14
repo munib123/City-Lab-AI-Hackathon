@@ -23,6 +23,7 @@ python -m venv .venv
 | GET | `/api/kb` | all ranges, urgent limits, aliases and rules, each with `{file, line, quote}` |
 | POST | `/api/analyze` | analyse a corpus report (`report_id`) **or** pasted text (`text`) |
 | POST | `/api/analyze/demographics` | same, after the user supplies the missing `age` and/or `sex` |
+| POST | `/api/chat` | ask a question about **one** report (see "Chat" below) |
 
 ### `GET /api/reports`
 ```json
@@ -95,6 +96,44 @@ Unit conversion example (`conversion`):
 { "from_value": 6.0, "from_unit": "mmol/L", "factor": 18.0, "to_value": 108.0, "to_unit": "mg/dL",
   "working": "6.0 mmol/L × 18 = 108 mg/dL", "origin": "team", "note": "1 mmol/L of glucose = 18 mg/dL" }
 ```
+
+## Chat
+
+`POST /api/chat` takes the same body as `/api/analyze` (exactly one of `report_id` or `text`, plus optional
+`age`/`sex`) and a `question` (1-500 characters). It is **stateless**: send the full question each time, and send
+`age`/`sex` again if the user supplied them. The chat is locked to that one report.
+
+```json
+{ "report_id": "P002", "question": "Is my SGPT normal?" }
+```
+```jsonc
+{
+  "report_id": "P002",
+  "answer": "Your ALT is 45 U/L. That is inside the range.",
+  "answer_type": "answered",   // see below
+  "sources": [                 // always show these as "sources"; empty for not_in_files / unavailable
+    { "id": "RES1", "label": "Your report: SGPT 45 U/L", "file": "report_P002_...md", "line": 14, "origin": "report" },
+    { "id": "R07",  "label": "Range: ALT (Female, ages 18-100)", "file": "5_ranges_biochemistry.md", "line": 6, "origin": "files" }
+  ],
+  "llm_used": true,            // false when code answered (refusals) or chat is off
+  "reading_grade": 3.2         // reading level of the answer, null when code wrote it
+}
+```
+
+| `answer_type` | Meaning | Suggested UI |
+|---|---|---|
+| `answered` | grounded in the files and this report; has at least one source | normal bubble + sources |
+| `not_in_files` | the files do not contain the answer ("not in the files") | neutral bubble |
+| `refused_other_patient` | the question was about someone else; refused by code | warning bubble |
+| `refused_diagnosis` | asked for a diagnosis ("Do I have diabetes?"); refused by code | warning bubble |
+| `needs_info` | age or sex is needed first; ask the user | bubble + age/sex form |
+| `unavailable` | no API key, or the model could not be reached; the rest of the app still works | grey bubble |
+
+`origin: "team"` on a source means general information that is **not from CityLab's files**; keep its label.
+
+The two refusals work even when chat is switched off (no key), because they are plain code. Every model answer is also
+checked in code before it is returned: its cited ids must exist, it must not sound like a diagnosis, it must not
+mention another patient, and it is checked for reading level (about class 8).
 
 ## Statuses
 
