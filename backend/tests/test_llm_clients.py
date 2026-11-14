@@ -146,6 +146,29 @@ def test_gemini_blocked_or_empty_candidates_are_an_llm_error():
         c.generate_json("s", "u")
 
 
+def test_a_key_with_non_ascii_characters_is_an_llm_error_not_a_crash():
+    # httpx raises UnicodeEncodeError (not an HTTPError) while building the header
+    called = []
+    c = GeminiClient("café-key", "m", http=client_with(lambda r: called.append(1) or httpx.Response(200)))
+    with pytest.raises(LLMError) as exc:
+        c.generate_json("s", "u")
+    assert "café-key" not in str(exc.value)
+    assert called == []  # nothing was sent
+    g = GroqClient("café-key", "m", http=client_with(lambda r: httpx.Response(200)))
+    with pytest.raises(LLMError):
+        g.generate_json("s", "u")
+
+
+@pytest.mark.parametrize("client_cls", [GeminiClient, GroqClient])
+def test_any_unexpected_error_while_calling_the_model_is_an_llm_error(client_cls):
+    def boom(request):
+        raise RuntimeError("something odd secret-key")
+
+    with pytest.raises(LLMError) as exc:
+        client_cls("secret-key", "m", http=client_with(boom)).generate_json("s", "u")
+    assert "secret-key" not in str(exc.value)
+
+
 def test_gemini_network_failure_is_an_llm_error():
     def boom(request):
         raise httpx.ConnectError("down")
