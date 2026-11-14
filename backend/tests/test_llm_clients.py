@@ -62,6 +62,84 @@ def test_gemini_http_errors_become_llm_error_without_leaking_the_key(status):
     assert str(status) in str(exc.value)
 
 
+def _model_in(request: httpx.Request) -> str:
+    return str(request.url).split("/models/")[1].split(":")[0]
+
+
+OK_BODY = {"candidates": [{"content": {"parts": [{"text": '{"answer":"hi"}'}]}}]}
+
+
+@pytest.mark.parametrize("status", [429, 500, 503])
+def test_gemini_falls_back_to_the_second_model_when_the_first_is_busy(status):
+    tried = []
+
+    def handler(request):
+        tried.append(_model_in(request))
+        return httpx.Response(status) if _model_in(request) == "primary" else httpx.Response(200, json=OK_BODY)
+
+    c = GeminiClient("k", "primary", fallback_model="backup", http=client_with(handler))
+    assert c.generate_json("s", "u") == '{"answer":"hi"}'
+    assert tried == ["primary", "backup"]
+
+
+def test_gemini_falls_back_after_a_timeout():
+    tried = []
+
+    def handler(request):
+        tried.append(_model_in(request))
+        if _model_in(request) == "primary":
+            raise httpx.ReadTimeout("slow")
+        return httpx.Response(200, json=OK_BODY)
+
+    c = GeminiClient("k", "primary", fallback_model="backup", http=client_with(handler))
+    assert c.generate_json("s", "u")
+    assert tried == ["primary", "backup"]
+
+
+@pytest.mark.parametrize("status", [400, 401, 403])
+def test_a_bad_key_or_request_does_not_waste_a_fallback_call(status):
+    tried = []
+
+    def handler(request):
+        tried.append(_model_in(request))
+        return httpx.Response(status)
+
+    c = GeminiClient("k", "primary", fallback_model="backup", http=client_with(handler))
+    with pytest.raises(LLMError):
+        c.generate_json("s", "u")
+    assert tried == ["primary"]
+
+
+def test_error_keeps_the_http_status_and_knows_when_the_service_is_busy():
+    c = GeminiClient("k", "primary", fallback_model="backup", http=client_with(lambda r: httpx.Response(429)))
+    with pytest.raises(LLMError) as exc:
+        c.generate_json("s", "u")
+    assert exc.value.status == 429 and exc.value.busy is True
+    c = GeminiClient("k", "m", http=client_with(lambda r: httpx.Response(401)))
+    with pytest.raises(LLMError) as exc:
+        c.generate_json("s", "u")
+    assert exc.value.status == 401 and exc.value.busy is False
+
+
+def test_no_fallback_configured_means_one_call():
+    tried = []
+
+    def handler(request):
+        tried.append(1)
+        return httpx.Response(503)
+
+    with pytest.raises(LLMError):
+        GeminiClient("k", "m", http=client_with(handler)).generate_json("s", "u")
+    assert len(tried) == 1
+
+
+def test_get_llm_passes_the_fallback_model_through(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "k-fb")
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    monkeypatch.delenv("GEMINI_FALLBACK_MODEL", raising=False)
+    assert get_llm().fallback_model == "gemini-2.5-flash-lite"
+
+
 def test_gemini_blocked_or_empty_candidates_are_an_llm_error():
     c = GeminiClient("k", "m", http=client_with(lambda r: httpx.Response(200, json={"candidates": []})))
     with pytest.raises(LLMError):
