@@ -70,6 +70,29 @@ class NameResolution(BaseModel):
     origin: Literal["files", "team"] | None = None
 
 
+class ParsedResult(BaseModel):
+    """One test result exactly as written in a report."""
+
+    raw_name: str
+    value_text: str
+    value: float | None = None  # None for qualitative ("Negative") or unreadable values
+    unit: str = ""
+    source: Source
+
+
+class ParsedReport(BaseModel):
+    report_id: str | None = None
+    file: str | None = None
+    patient_name: str | None = None
+    mrn: str | None = None
+    issued: str | None = None
+    age: int | None = None
+    age_state: Literal["ok", "missing", "corrupted"] = "missing"
+    sex: Literal["Male", "Female"] | None = None
+    sex_state: Literal["ok", "missing", "corrupted"] = "missing"
+    results: list[ParsedResult] = Field(default_factory=list)
+
+
 def normalize_name(text: str) -> str:
     """Lower-case, drop punctuation and extra spaces so 'SGPT', ' sgpt ' and 'S.G.P.T' agree."""
     return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
