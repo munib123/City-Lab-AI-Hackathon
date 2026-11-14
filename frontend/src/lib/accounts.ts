@@ -81,7 +81,9 @@ export function reportsForPatient<T extends { patient: { id: string } }>(
 
 /** Look a report up by its id. Unlike a loose lookup, it never falls back to some other report. */
 export function findReportStrict(reports: readonly LabReport[], id: string): LabReport | undefined {
-  const key = id.trim().toLowerCase();
+  let key = id.trim().toLowerCase();
+  // The API and the QR codes use the short id (P004); the pages use report-P004. Exactly P + 3 digits, nothing looser.
+  if (/^p\d{3}$/.test(key)) key = `report-${key}`;
   if (!key) return undefined;
   return reports.find((report) => report.id.toLowerCase() === key);
 }

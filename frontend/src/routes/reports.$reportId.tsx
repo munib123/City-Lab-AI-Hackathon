@@ -9,6 +9,7 @@ import { buildDoctorQuestions } from "@/lib/questions";
 import { downloadReportSummary } from "@/lib/report-download";
 import { useSettings } from "@/lib/settings";
 import { ReportHeader } from "@/components/report/ReportHeader";
+import { ReportActions } from "@/components/report/ReportActions";
 import { ReportSummary } from "@/components/report/ReportSummary";
 import { UrgentAlert } from "@/components/report/UrgentAlert";
 import { TestResultItem } from "@/components/report/TestResultItem";
@@ -177,6 +178,9 @@ function ReportAnalysis() {
     <div className="mx-auto max-w-[1280px] space-y-8">
       {/* Patient Header */}
       <ReportHeader report={activeReport} onDownload={() => downloadReportSummary(activeReport, results, questions)} />
+
+      {/* Listen, Email, WhatsApp and QR code */}
+      <ReportActions report={activeReport} results={results} />
 
       {/* Interactive Missing Demographics Resolver (Sleek Alert) */}
       {isMissingDemographics && (

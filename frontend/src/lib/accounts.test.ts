@@ -101,13 +101,23 @@ describe("findReportStrict", () => {
     expect(findReportStrict(DEMO_REPORTS, "  REPORT-p004 ")?.patient.name).toBe("Diana Prince");
   });
 
+  it("also accepts the short id the API and the QR codes use (P004), and nothing looser", () => {
+    expect(findReportStrict(DEMO_REPORTS, "P004")?.patient.name).toBe("Diana Prince");
+    expect(findReportStrict(DEMO_REPORTS, " p004 ")?.patient.name).toBe("Diana Prince");
+    expect(findReportStrict(DEMO_REPORTS, "P014")?.patient.name).toBe("Nancy Drew");
+  });
+
   it("never falls back to another report (the old lookup returned report P001 for anything unknown)", () => {
     for (const id of [
       "",
       "  ",
       "report-P099",
+      "P099",
       "report-P01",
-      "P004",
+      "P04",
+      "P0004",
+      "P004x",
+      "report-P004x",
       "4",
       "12",
       "report-",
