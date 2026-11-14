@@ -146,6 +146,41 @@ The two refusals work even when chat is switched off (no key), because they are 
 checked in code before it is returned: its cited ids must exist, it must not sound like a diagnosis, it must not
 mention another patient, and it is checked for reading level (about class 8).
 
+## Read aloud (`POST /api/tts`)
+
+Turns an answer or part of a report into speech (Microsoft Edge voices) and returns a link to the audio. The audio is made
+once per text and voice, then served from a cache in Supabase, so repeat requests are fast (about 0.6 s vs about 6 s).
+
+Send **one** of these (arbitrary text is rejected with 422, so this cannot be used as a general text-to-speech service):
+
+```jsonc
+{ "chat_id": "0f6c1a52-..." }                                // a stored chat answer: use the `id` from /api/chat
+{ "report_id": "P004", "part": "summary" }                   // part: summary | urgent | questions | result
+{ "report_id": "P004", "part": "result", "index": 1 }        // one result (0-based)
+{ "report_id": "P003", "part": "summary", "age": 40, "sex": "Male", "voice": "en-IN-NeerjaNeural" }  // optional extras
+```
+```jsonc
+{
+  "audio_url": "https://<project>.supabase.co/storage/v1/object/sign/tts-audio/ab/ab12....mp3?token=...",
+  "cached": false,                 // true when it was already made
+  "voice": "en-US-AriaNeural",
+  "characters": 152,
+  "source": "chat:0f6c1a52-...",
+  "expires_in": 3600               // the link is temporary; ask again for a fresh one
+}
+```
+Play it with `new Audio(audio_url).play()`. Voices: `en-US-AriaNeural` (default), `en-US-GuyNeural`, `en-GB-SoniaNeural`,
+`en-IN-NeerjaNeural`, `en-IN-PrabhatNeural`. File references like `(5_ranges_biochemistry.md:6)` and patient names are never spoken.
+
+| Code | When |
+|---|---|
+| 404 | no such chat answer or report, no urgent results for `part: "urgent"`, result index out of range |
+| 422 | not exactly one of `chat_id`/`report_id`, bad `part`/`index`/`voice`, any extra field such as `text` |
+| 502 | the voice service or the audio storage failed (try again) |
+| 503 | the database is not configured (audio is cached there) |
+
+Pasted-text chats are not stored (see below), so they have no `chat_id` and cannot be read aloud with this endpoint.
+
 ## What is stored
 
 Responses are saved in Supabase (`supabase/migrations/`), **for corpus reports only** (requests that send `report_id`):
@@ -154,6 +189,7 @@ Responses are saved in Supabase (`supabase/migrations/`), **for corpus reports o
 |---|---|
 | `chat_messages` | every chat question and answer, including refusals and "unavailable": answer type, sources, reading grade, model, the age/sex the answer was based on |
 | `analyses` | the latest analysis for each report and age/sex combination (the full `Analysis` JSON; analysing again updates it, no duplicates) |
+| `tts_audio` + private bucket `tts-audio` | the read-aloud audio cache: one MP3 per text and voice, with the exact spoken text |
 
 **Pasted report text (`text`) is never stored**, neither the text nor its analysis nor its chat, because it may be a real
 person's lab results. Storage is best effort: if the database is unavailable the API still answers normally and `id` is null.

@@ -19,6 +19,7 @@ that calls this API (CORS is open by default).
 | `LLM_PROVIDER` | no | `gemini` (default) or `groq` (then `GROQ_API_KEY`, `GROQ_MODEL`) |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | for storage | added automatically by the Vercel Supabase integration. Without them nothing is stored and everything else works. `SUPABASE_SECRET_KEY` is used if the service-role key is missing |
 | `PUBLIC_APP_URL` | no | the frontend's public address, e.g. `https://my-frontend.vercel.app`. QR codes open `<PUBLIC_APP_URL>/reports/<id>`. Unset = QR opens the API's own report page |
+| `TTS_VOICE` | no | default read-aloud voice, one of the list in `docs/API.md`. Default `en-US-AriaNeural` |
 | `CORS_ORIGINS` | no | comma-separated list of allowed frontend origins; default `*` |
 
 Keys are never committed. A test scans the repo for key-shaped strings.
