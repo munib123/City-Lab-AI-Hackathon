@@ -1,0 +1,10 @@
+[project]
+name = "medlens"
+version = "0.1.0"
+description = "MedLens - plain-language lab report explainer built on the CityLab corpus"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+testpaths = ["backend/tests"]
+addopts = "-q"
