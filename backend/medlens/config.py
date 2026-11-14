@@ -51,6 +51,11 @@ class SupabaseSettings:
         return bool(self.url and self.key)
 
 
+def public_app_url() -> str:
+    """The frontend's public address (for QR links). Empty until the frontend is deployed."""
+    return _clean_key(os.environ.get("PUBLIC_APP_URL", "")).rstrip("/")
+
+
 def supabase_settings() -> SupabaseSettings:
     """Supabase REST settings. Variables are injected by the Vercel Supabase integration."""
     url = _clean_key(os.environ.get("SUPABASE_URL", "")).rstrip("/")
