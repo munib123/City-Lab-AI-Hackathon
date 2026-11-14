@@ -128,6 +128,35 @@ class Store:
         return response is not None
 
 
+    # ------------------------------------------------------------ email rate limiting
+
+    def log_email(self, ip_hash: str, to_hash: str, report_id: str, status: str) -> bool:
+        """Record one send attempt (hashes only) so the limits can be enforced."""
+        row = {"ip_hash": ip_hash, "to_hash": to_hash, "report_id": report_id, "status": status}
+        return self._post("email_log", row, prefer="return=minimal") is not None
+
+    def count_emails(self, since: datetime, ip_hash: str | None = None, to_hash: str | None = None) -> int | None:
+        """How many attempts since a moment, optionally for one sender or recipient. None if it cannot be checked."""
+        params = {"select": "id", "created_at": f"gte.{since.isoformat()}"}
+        if ip_hash:
+            params["ip_hash"] = f"eq.{ip_hash}"
+        if to_hash:
+            params["to_hash"] = f"eq.{to_hash}"
+        try:
+            response = self.http.get(
+                f"{self.url}/rest/v1/email_log",
+                params=params,
+                headers={**self._auth(), "Prefer": "count=exact", "Range": "0-0"},
+            )
+        except Exception as exc:
+            log.warning("Supabase email_log count failed (%s)", type(exc).__name__)
+            return None
+        if response.status_code >= 300:
+            log.warning("Supabase email_log count failed (HTTP %s)", response.status_code)
+            return None
+        total = response.headers.get("content-range", "").rpartition("/")[2]
+        return int(total) if total.isdigit() else None
+
     # ------------------------------------------------------------ read-aloud audio
 
     def get_chat_answer(self, chat_id: str) -> str | None:
