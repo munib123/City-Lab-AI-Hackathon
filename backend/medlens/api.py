@@ -5,7 +5,9 @@ from __future__ import annotations
 import os
 from typing import Literal
 
+import hashlib
 import uuid
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
@@ -19,6 +21,7 @@ from .engine import analyze_report
 from .explain import enrich
 from .kb import load_kb
 from .llm import LLMClient, get_llm
+from .mailer import GmailSMTP, MailError, build_message, mask_address, valid_address
 from .models import KnowledgeBase, ParsedReport
 from .privacy import PrivacyGuard
 from .qr import make_qr, report_link
@@ -140,7 +143,58 @@ class TTSRequest(BaseModel):
         return self
 
 
+class EmailRequest(BaseModel):
+    """Email the explanation of one corpus report. Nothing else can be sent: no subject, body, cc or free text."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    report_id: str = Field(min_length=1, max_length=20)
+    to: str
+    age: int | None = Field(default=None, ge=0, le=130, strict=True)
+    sex: Literal["Male", "Female"] | None = None
+
+    _sex = field_validator("sex", mode="before")(_clean_sex)
+
+    @field_validator("to")
+    @classmethod
+    def to_is_one_plain_address(cls, v: str) -> str:
+        if not valid_address(v):
+            raise ValueError("to must be one email address, for example name@example.com")
+        return v
+
+
 # ---------------------------------------------------------------- helpers
+
+# Report emails go out from a personal Gmail account, so sending is tightly limited.
+EMAIL_PER_IP_HOUR = 5
+EMAIL_PER_RECIPIENT_HOUR = 3
+EMAIL_PER_RECIPIENT_DAY = 5
+EMAIL_DAILY_CAP = 100  # Gmail allows about 500 a day; stay far below. Override with EMAIL_DAILY_LIMIT.
+
+
+def mailer_dependency() -> GmailSMTP | None:
+    """Overridable in tests. None means email is not configured (no SMTP settings)."""
+    settings = config.smtp_settings()
+    return GmailSMTP(settings) if settings.enabled else None
+
+
+def _hash(value: str) -> str:
+    """Salted hash, so the log can rate-limit without ever holding an address or an IP in clear."""
+    salt = config.clean_env("EMAIL_HASH_SALT") or hashlib.sha256(config.supabase_settings().key.encode()).hexdigest()
+    return hashlib.sha256(f"{salt}|{value}".encode("utf-8")).hexdigest()
+
+
+def _client_ip(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+    return forwarded or (request.client.host if request.client else "unknown")
+
+
+def _daily_cap() -> int:
+    try:
+        return max(int(config.clean_env("EMAIL_DAILY_LIMIT") or EMAIL_DAILY_CAP), 0)
+    except ValueError:
+        return EMAIL_DAILY_CAP
+
 
 _tts_engine = EdgeTTS()
 AUDIO_LINK_SECONDS = 3600
@@ -240,6 +294,7 @@ def health():
         "llm_provider": llm.provider,
         "llm_model": llm.model,
         "storage_enabled": config.supabase_settings().enabled,
+        "email_enabled": config.smtp_settings().enabled,
         "kb": {
             "ranges": len(kb.ranges),
             "danger_limits": len(kb.danger),
@@ -396,3 +451,57 @@ def read_aloud(
         "source": source,
         "expires_in": AUDIO_LINK_SECONDS,
     }
+
+
+@app.post("/api/email")
+def email_report(
+    req: EmailRequest,
+    request: Request,
+    store: Store | None = Depends(store_dependency),
+    mailer: GmailSMTP | None = Depends(mailer_dependency),
+):
+    """Email the explanation of a corpus report to one address (rate limited; see EMAIL_* limits)."""
+    if mailer is None:
+        raise HTTPException(status_code=503, detail="Email is not configured.")
+    if store is None:
+        raise HTTPException(status_code=503, detail="Email is switched off because the sending limits cannot be checked.")
+
+    report_id = req.report_id.strip()
+    report = get_report(report_id)
+    if report is None:
+        raise HTTPException(status_code=404, detail=f"No report with id {report_id!r}.")
+
+    ip_hash, to_hash = _hash(_client_ip(request)), _hash(req.to.lower())
+    now = datetime.now(timezone.utc)
+    hour, day = now - timedelta(hours=1), now - timedelta(days=1)
+    limits = [
+        ("Too many emails were requested from your connection. Please try again later.", 3600,
+         lambda: store.count_emails(hour, ip_hash=ip_hash), EMAIL_PER_IP_HOUR),
+        ("This recipient has received too many emails recently. Please try again later.", 3600,
+         lambda: store.count_emails(hour, to_hash=to_hash), EMAIL_PER_RECIPIENT_HOUR),
+        ("This recipient has reached the daily limit. Please try again tomorrow.", 86400,
+         lambda: store.count_emails(day, to_hash=to_hash), EMAIL_PER_RECIPIENT_DAY),
+        ("The daily email limit for today has been reached. Please try again tomorrow.", 86400,
+         lambda: store.count_emails(day), _daily_cap()),
+    ]
+    for message, retry_after, count, limit in limits:
+        used = count()
+        if used is None:  # cannot verify the limit, so do not send
+            raise HTTPException(status_code=503, detail="Email is temporarily unavailable.")
+        if used >= limit:
+            raise HTTPException(status_code=429, detail=message, headers={"Retry-After": str(retry_after)})
+
+    kb = load_kb()
+    try:
+        analysis = enrich(analyze_report(report, kb, age=req.age, sex=req.sex), kb)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    message = build_message(analysis, req.to, config.smtp_settings().email)
+    try:
+        mailer.send(message)
+    except MailError as exc:
+        store.log_email(ip_hash, to_hash, report_id, "failed")  # failed attempts count too
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    store.log_email(ip_hash, to_hash, report_id, "sent")  # best effort; the mail is already out
+    return {"sent": True, "to": mask_address(req.to), "report_id": report_id}
