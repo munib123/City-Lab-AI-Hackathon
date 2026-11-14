@@ -30,6 +30,7 @@ def test_health_reports_chat_on_when_a_key_exists(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "x")
     body = client.get("/api/health").json()
     assert body["llm_enabled"] is True and body["llm_provider"] == "gemini"
+    assert body["llm_model"] == "gemini-2.5-flash"
 
 
 def test_reports_lists_the_fourteen_corpus_reports():

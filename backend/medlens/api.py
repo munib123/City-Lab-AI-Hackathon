@@ -131,6 +131,7 @@ def health():
         "version": __version__,
         "llm_enabled": llm.enabled,
         "llm_provider": llm.provider,
+        "llm_model": llm.model,
         "kb": {
             "ranges": len(kb.ranges),
             "danger_limits": len(kb.danger),

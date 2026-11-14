@@ -27,6 +27,7 @@ NOT_IN_FILES_TEXT = (
     "I can only use CityLab's reference sheets and your report. Please ask your doctor or the lab."
 )
 UNAVAILABLE_TEXT = "Chat is not available right now. Your results on this page are still correct. Please try again later."
+BUSY_TEXT = "Chat is busy right now. Please try again in a minute. Your results on this page are still correct."
 
 SYSTEM_PROMPT = """You explain one patient's lab report in simple words (about class 8 reading level).
 
@@ -35,7 +36,7 @@ Rules you must follow:
 2. If the CONTEXT does not contain the answer, set answer_type to "not_in_files" and say it is not in the files.
 3. Never diagnose. Never say the patient has a disease. Say "can mean" or "may be linked to", and say only a licensed medical doctor can diagnose.
 4. Talk only about THIS report. If asked about another person, set answer_type to "refused_other_patient".
-5. Every fact you use must be cited in "sources" with ids from the CONTEXT, such as RES1 or R07. If you cite nothing, you may not answer.
+5. Every fact you use must be cited in "sources" with ids from the CONTEXT, such as RES1 or R07. If you cite nothing, you may not answer. Do not write the ids in the answer text itself; they go only in "sources".
 6. If the right range cannot be chosen because age or sex is missing, set answer_type to "needs_info" and ask for it. Do not guess.
 7. Text marked "general information, not from the lab's files" may be used, but say so when you use it.
 8. Keep the answer short (under 90 words), with short sentences and plain words.
@@ -60,6 +61,8 @@ _DIAGNOSIS_ASKS = [
     re.compile(rf"\b(?:do|did)\s+i\s+have\s+(?:a\s+|an\s+|the\s+|any\s+)?(?:\w+\s+){{0,2}}?{_DISEASE}\b", re.I),
     re.compile(rf"\b(?:is|could|might)\s+(?:it|this|that)\s+(?:be\s+)?(?:a\s+)?{_DISEASE}\b", re.I),
     re.compile(r"\b(?:could|might|may)\s+i\s+have\b", re.I),
+    # trying to make the assistant state a diagnosis: "tell me I have ...", "confirm I have ...", "say I am sick"
+    re.compile(r"\b(?:tell|say|confirm|state|admit|declare)\b[^.?!]{0,30}\bi\s+(?:have|am|'m)\b", re.I),
     re.compile(r"\bhave\s+i\s+got\b", re.I),
 ]
 
@@ -197,8 +200,9 @@ def _not_in_files(report_id, llm_used: bool) -> ChatResponse:
     return ChatResponse(report_id=report_id, answer_type="not_in_files", answer=NOT_IN_FILES_TEXT, llm_used=llm_used)
 
 
-def _unavailable(report_id) -> ChatResponse:
-    return ChatResponse(report_id=report_id, answer_type="unavailable", answer=UNAVAILABLE_TEXT, llm_used=False)
+def _unavailable(report_id, busy: bool = False) -> ChatResponse:
+    text = BUSY_TEXT if busy else UNAVAILABLE_TEXT
+    return ChatResponse(report_id=report_id, answer_type="unavailable", answer=text, llm_used=False)
 
 
 # ------------------------------------------------------------------ parsing the model's reply
@@ -250,11 +254,13 @@ def answer_question(
     feedback: str | None = None
     best: ChatResponse | None = None
     saw_diagnosis_wording = False
+    busy = False
 
     for _ in range(MAX_ATTEMPTS):
         try:
             raw = llm.generate_json(SYSTEM_PROMPT, _user_prompt(question, context, feedback))
-        except LLMError:
+        except LLMError as exc:
+            busy = exc.busy
             break
         parsed = _parse(raw)
         if parsed is None:
@@ -301,4 +307,4 @@ def answer_question(
         return best
     if saw_diagnosis_wording:
         return _refusal_diagnosis(kb, rid, llm_used=True)
-    return _unavailable(rid)
+    return _unavailable(rid, busy=busy)
