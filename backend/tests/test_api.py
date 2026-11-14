@@ -164,3 +164,25 @@ def test_responses_never_leak_other_patients():
     dumped = str(body)
     for other in ("Bob Jones", "Diana Prince", "CLD-P002"):
         assert other not in dumped
+
+
+# ---------- the bare link must not show a bare 404 ----------
+
+@pytest.mark.parametrize("path", ["/", "/api"])
+def test_root_describes_the_api_instead_of_a_404(path):
+    r = client.get(path)
+    assert r.status_code == 200
+    body = r.json()
+    assert body["name"] == "MedLens API"
+    assert body["docs"] == "/docs"
+    assert body["health"] == "/api/health"
+    assert "/api/analyze" in body["endpoints"] and "/api/chat" in body["endpoints"]
+
+
+def test_root_is_not_part_of_the_published_api_schema():
+    schema = client.get("/openapi.json").json()
+    assert "/" not in schema["paths"] and "/api" not in schema["paths"]
+
+
+def test_interactive_docs_are_served():
+    assert client.get("/docs").status_code == 200

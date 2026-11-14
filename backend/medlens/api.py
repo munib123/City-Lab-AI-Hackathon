@@ -208,6 +208,27 @@ def _analyze(req: AnalyzeRequest, store: Store | None = None) -> Analysis:
 
 # ---------------------------------------------------------------- routes
 
+@app.get("/", include_in_schema=False)
+@app.get("/api", include_in_schema=False)
+def root():
+    """What a visitor sees at the bare link, instead of a 404."""
+    return {
+        "name": "MedLens API",
+        "version": __version__,
+        "message": "This is the MedLens API. Open /docs to try it in the browser.",
+        "docs": "/docs",
+        "health": "/api/health",
+        "endpoints": [
+            "/api/health",
+            "/api/reports",
+            "/api/kb",
+            "/api/analyze",
+            "/api/analyze/demographics",
+            "/api/chat",
+        ],
+    }
+
+
 @app.get("/api/health")
 def health():
     kb = load_kb()
