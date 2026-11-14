@@ -105,7 +105,7 @@ class GeminiClient:
             response = self.http.post(url, json=body, headers={"x-goog-api-key": self.api_key})
         except httpx.TimeoutException:
             raise LLMError("Gemini took too long to answer", timeout=True) from None
-        except httpx.HTTPError as exc:
+        except Exception as exc:  # network errors, but also e.g. a key that cannot be sent as a header
             raise LLMError(f"Gemini request failed ({type(exc).__name__})") from None
         if response.status_code != 200:
             raise LLMError(f"Gemini returned HTTP {response.status_code}", status=response.status_code)
@@ -130,7 +130,7 @@ class GroqClient:
         }
         try:
             response = self.http.post(GROQ_URL, json=body, headers={"Authorization": f"Bearer {self.api_key}"})
-        except httpx.HTTPError as exc:
+        except Exception as exc:
             raise LLMError(f"Groq request failed ({type(exc).__name__})") from None
         if response.status_code != 200:
             raise LLMError(f"Groq returned HTTP {response.status_code}", status=response.status_code)

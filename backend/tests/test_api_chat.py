@@ -48,6 +48,13 @@ def test_without_a_key_the_guards_still_refuse():
     assert chat(report_id="P002", question="What is Alice's result?").json()["answer_type"] == "refused_other_patient"
 
 
+def test_a_broken_key_gives_unavailable_not_a_500(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "café")  # cannot be sent as an HTTP header
+    r = chat(report_id="P002", question="What does my SGPT mean?")
+    assert r.status_code == 200
+    assert r.json()["answer_type"] == "unavailable"
+
+
 # ---------- with a (fake) model ----------
 
 def test_grounded_answer_with_resolved_sources():
