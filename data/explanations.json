@@ -1,0 +1,60 @@
+{
+  "label": "General information, not from CityLab's files",
+  "items": {
+    "Hemoglobin": {
+      "measures": "Hemoglobin is the part of your red blood cells that carries oxygen around your body.",
+      "low": "A low number can mean your blood carries less oxygen than usual. It may be linked to low iron or blood loss. A doctor can tell the cause.",
+      "high": "A high number can mean your blood has more red cells than usual. It may be linked to low body water or living high above sea level. A doctor can tell the cause."
+    },
+    "White Blood Cell Count": {
+      "measures": "White blood cells help your body fight germs.",
+      "low": "A low count can mean you have fewer germ-fighting cells than usual. Many things may cause this. A doctor can look into it.",
+      "high": "A high count can mean your body is reacting to something, such as an infection or stress. A doctor can find the cause."
+    },
+    "Platelet Count": {
+      "measures": "Platelets are tiny cell pieces that help your blood clot when you get a cut.",
+      "low": "A low count can mean your blood may take longer to clot. Many things may cause this. A doctor can check why.",
+      "high": "A high count can mean your body is making more platelets than usual. This may happen after an infection or swelling. A doctor can check why."
+    },
+    "Fasting Blood Sugar": {
+      "measures": "This shows how much sugar is in your blood after you have not eaten for some hours.",
+      "low": "A low number can mean your body has less sugar than it needs for energy. A doctor can check why.",
+      "high": "A high number can mean there is more sugar in your blood than usual. One test alone cannot show the cause. A doctor can explain it and may ask for more tests."
+    },
+    "ALT": {
+      "measures": "ALT is a protein found mostly in the liver. Doctors measure it to see how the liver is doing.",
+      "low": "A low number is common and may not be a worry by itself. A doctor can tell you if it matters for you.",
+      "high": "A high number can mean the liver is under stress. Some medicines, alcohol and other things may cause this. A doctor can find the cause."
+    },
+    "AST": {
+      "measures": "AST is a protein found in the liver, and also in muscles and the heart.",
+      "low": "A low number is common and may not be a worry by itself. A doctor can tell you if it matters for you.",
+      "high": "A high number can mean the liver or muscles are under stress. Many things may cause this. A doctor can find the cause."
+    },
+    "Cholesterol": {
+      "measures": "Cholesterol is a fatty substance in your blood. Your body needs some, but too much can build up in your blood vessels.",
+      "low": "A low number is less common and may not be a worry. A doctor can check if it matters for you.",
+      "high": "A high number can mean there is more fat in your blood than is ideal. Food, activity and family history may all play a part. A doctor can talk about next steps."
+    },
+    "TSH": {
+      "measures": "TSH is a signal sent by the brain to tell the thyroid how hard to work. The thyroid is a small gland in your neck.",
+      "low": "A low number can mean the thyroid may be working harder than usual. A doctor can check with more tests.",
+      "high": "A high number can mean the thyroid may be working slower than usual. A doctor can check with more tests."
+    },
+    "Urine pH": {
+      "measures": "Urine pH shows how acidic your urine is.",
+      "low": "A low number means the urine is more acidic. Food and drink may change this. A doctor can tell you if it matters.",
+      "high": "A high number means the urine is less acidic. Food, drink or a urine infection may change this. A doctor can tell you if it matters."
+    },
+    "Urine Protein": {
+      "measures": "This checks if protein is leaking into your urine. Healthy urine usually has little or none.",
+      "low": null,
+      "high": "Protein in the urine can mean the kidneys are letting some protein through. Not drinking enough water or hard exercise may also cause it. A doctor can check again and find the cause."
+    },
+    "Red Blood Cell Count": {
+      "measures": "Red blood cells carry oxygen around your body. This test counts them.",
+      "low": null,
+      "high": null
+    }
+  }
+}
