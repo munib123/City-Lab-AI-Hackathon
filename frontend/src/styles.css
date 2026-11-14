@@ -1,0 +1,340 @@
+/*
+ * Tailwind v4 entry: config lives here, with no tailwind.config.js or PostCSS plugin.
+ * Keep every @import in this top block. Web fonts load via <link> in src/routes/__root.tsx.
+ */
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * LabSense AI design system.
+ * Light icy/silver interface surfaces, deep navy for emphasis, medical blue as primary.
+ * Result status colors: teal = within range, amber = outside range, coral = urgent,
+ * slate = cannot be classified from the provided files.
+ */
+
+@theme inline {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 14px);
+  --radius-4xl: calc(var(--radius) + 22px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-glow: var(--primary-glow);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  --color-navy: var(--navy);
+  --color-navy-2: var(--navy-2);
+  --color-navy-foreground: var(--navy-foreground);
+  --color-navy-muted: var(--navy-muted);
+  --color-icy: var(--icy);
+  --color-silver: var(--silver);
+
+  --color-normal: var(--status-normal);
+  --color-normal-soft: var(--status-normal-soft);
+  --color-normal-ink: var(--status-normal-ink);
+  --color-abnormal: var(--status-abnormal);
+  --color-abnormal-soft: var(--status-abnormal-soft);
+  --color-abnormal-ink: var(--status-abnormal-ink);
+  --color-urgent: var(--status-urgent);
+  --color-urgent-soft: var(--status-urgent-soft);
+  --color-urgent-ink: var(--status-urgent-ink);
+  --color-unclassified: var(--status-unclassified);
+  --color-unclassified-soft: var(--status-unclassified-soft);
+  --color-unclassified-ink: var(--status-unclassified-ink);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --shadow-soft: var(--shadow-soft);
+  --shadow-glass: var(--shadow-glass);
+  --shadow-elevated: var(--shadow-elevated);
+  --shadow-glow: var(--shadow-glow);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Brand palette */
+  --navy: oklch(0.236 0.049 259.9);          /* #101E35 */
+  --navy-2: oklch(0.372 0.097 259.2);        /* #1E3F73 */
+  --navy-foreground: oklch(0.975 0.005 247.9);
+  --navy-muted: oklch(0.78 0.035 250);
+  --icy: oklch(0.959 0.013 241);             /* #EAF3FA */
+  --silver: oklch(0.975 0.005 247.9);        /* #F4F7FA */
+
+  --background: var(--silver);
+  --foreground: var(--navy);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--navy);
+  --popover: oklch(1 0 0);
+  --popover-foreground: var(--navy);
+  --primary: oklch(0.535 0.135 258.1);       /* #376CBA */
+  --primary-foreground: oklch(1 0 0);
+  --primary-glow: oklch(0.72 0.11 240);
+  --secondary: var(--icy);
+  --secondary-foreground: var(--navy);
+  --muted: oklch(0.953 0.011 245);
+  --muted-foreground: oklch(0.49 0.04 258);
+  --accent: oklch(0.935 0.022 245);
+  --accent-foreground: var(--navy);
+  --destructive: oklch(0.6 0.16 22);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.91 0.014 250);
+  --input: oklch(0.89 0.016 250);
+  --ring: oklch(0.535 0.135 258.1);
+
+  /* Result status */
+  --status-normal: oklch(0.838 0.078 184.5);       /* #8EDBD0 */
+  --status-normal-soft: oklch(0.95 0.03 184);
+  --status-normal-ink: oklch(0.45 0.075 186);
+  --status-abnormal: oklch(0.812 0.11 78.9);       /* #E8B96B */
+  --status-abnormal-soft: oklch(0.96 0.035 80);
+  --status-abnormal-ink: oklch(0.5 0.1 65);
+  --status-urgent: oklch(0.732 0.118 20.3);        /* #E98989 */
+  --status-urgent-soft: oklch(0.96 0.025 20);
+  --status-urgent-ink: oklch(0.5 0.15 22);
+  --status-unclassified: oklch(0.78 0.02 255);
+  --status-unclassified-soft: oklch(0.95 0.008 255);
+  --status-unclassified-ink: oklch(0.45 0.03 258);
+
+  /* Gradients */
+  --gradient-hero: radial-gradient(120% 140% at 85% 30%, oklch(0.93 0.025 230) 0%, oklch(0.925 0.02 248) 45%, oklch(0.955 0.012 245) 100%);
+  --gradient-navy: linear-gradient(140deg, var(--navy) 0%, oklch(0.3 0.075 259) 55%, var(--navy-2) 100%);
+  --gradient-primary: linear-gradient(135deg, var(--primary), var(--primary-glow));
+  --gradient-range: linear-gradient(90deg, var(--status-abnormal-soft), var(--status-normal-soft) 30%, var(--status-normal-soft) 70%, var(--status-abnormal-soft));
+  --gradient-ambient: radial-gradient(60% 50% at 10% 0%, oklch(0.93 0.03 240 / 0.7), transparent 70%), radial-gradient(50% 40% at 100% 100%, oklch(0.93 0.035 190 / 0.45), transparent 70%);
+
+  /* Shadows */
+  --shadow-soft: 0 1px 2px oklch(0.236 0.049 259.9 / 0.04), 0 8px 24px -12px oklch(0.236 0.049 259.9 / 0.12);
+  --shadow-glass: 0 10px 40px -16px oklch(0.236 0.049 259.9 / 0.25), inset 0 1px 0 oklch(1 0 0 / 0.7);
+  --shadow-elevated: 0 30px 60px -30px oklch(0.236 0.049 259.9 / 0.35);
+  --shadow-glow: 0 0 0 1px oklch(0.535 0.135 258.1 / 0.25), 0 12px 40px -12px oklch(0.535 0.135 258.1 / 0.45);
+
+  --chart-1: var(--primary);
+  --chart-2: var(--status-normal);
+  --chart-3: var(--status-abnormal);
+  --chart-4: var(--status-urgent);
+  --chart-5: var(--navy-2);
+
+  --sidebar: oklch(1 0 0 / 0.7);
+  --sidebar-foreground: var(--navy);
+  --sidebar-primary: var(--navy);
+  --sidebar-primary-foreground: var(--navy-foreground);
+  --sidebar-accent: var(--icy);
+  --sidebar-accent-foreground: var(--navy);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html.text-large {
+    font-size: 112.5%;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background: oklch(0.535 0.135 258.1 / 0.2);
+  }
+}
+
+/* ---------- Surfaces ---------- */
+
+@utility surface-glass {
+  background: oklch(1 0 0 / 0.6);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid oklch(1 0 0 / 0.75);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility surface-glass-navy {
+  background: oklch(0.42 0.09 258 / 0.35);
+  backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid oklch(1 0 0 / 0.12);
+  box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.08);
+}
+
+@utility surface-hero {
+  background: var(--gradient-hero);
+}
+
+@utility surface-navy {
+  background: var(--gradient-navy);
+  color: var(--navy-foreground);
+}
+
+@utility surface-ambient {
+  background-image: var(--gradient-ambient);
+}
+
+@utility text-gradient-primary {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+@utility eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* Fine dotted scientific grid */
+@utility grid-lab {
+  background-image: radial-gradient(oklch(0.535 0.135 258.1 / 0.12) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes float-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes dash-flow {
+  to { stroke-dashoffset: -200; }
+}
+@keyframes pulse-node {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+@keyframes ambient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes border-sweep {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+@utility animate-fade-up {
+  animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@utility animate-float-soft {
+  animation: float-soft 7s ease-in-out infinite;
+}
+@utility animate-dash-flow {
+  stroke-dasharray: 4 8;
+  animation: dash-flow 12s linear infinite;
+}
+@utility animate-pulse-node {
+  animation: pulse-node 3.2s ease-in-out infinite;
+}
+@utility animate-ambient {
+  background-size: 200% 200%;
+  animation: ambient-shift 18s ease-in-out infinite;
+}
+@utility animate-shimmer {
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* Upload zone: animated hairline border on hover / drag */
+@utility upload-zone {
+  position: relative;
+  background:
+    linear-gradient(var(--card), var(--card)) padding-box,
+    linear-gradient(90deg, var(--border), var(--border)) border-box;
+  border: 1.5px dashed transparent;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  &:hover, &[data-dragging="true"] {
+    background:
+      linear-gradient(var(--card), var(--card)) padding-box,
+      linear-gradient(90deg, var(--primary), var(--status-normal), var(--primary-glow), var(--primary)) border-box;
+    background-size: 100% 100%, 200% 100%;
+    animation: border-sweep 3s linear infinite;
+    border-style: solid;
+    box-shadow: var(--shadow-glow);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+@utility mask-fade-left {
+  mask-image: linear-gradient(90deg, transparent 0%, black 38%);
+}
+@utility mask-fade-left-strong {
+  mask-image: linear-gradient(90deg, transparent 10%, black 60%);
+}
