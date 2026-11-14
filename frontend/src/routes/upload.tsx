@@ -6,6 +6,7 @@ import { ReportUploader, validateReportFile } from "@/components/upload/ReportUp
 import { UploadProgress } from "@/components/upload/UploadProgress";
 import { ANALYSIS_STEPS, AnalysisSteps } from "@/components/upload/AnalysisSteps";
 import { SAMPLE_REPORT_ID } from "@/data/demo-reports";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/upload")({
   head: () => ({
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/upload")({
 });
 
 function UploadPage() {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +69,8 @@ function UploadPage() {
       setStep((s) => {
         if (s >= ANALYSIS_STEPS.length - 1) {
           window.clearInterval(id);
-          window.setTimeout(() => navigate({ to: "/reports/$reportId", params: { reportId: SAMPLE_REPORT_ID } }), 500);
+          const targetReportId = user?.patientId === "CLD-P002-8821" ? "report-P002" : user?.patientId === "CLD-P003-7714" ? "report-P003" : SAMPLE_REPORT_ID;
+          window.setTimeout(() => navigate({ to: "/reports/$reportId", params: { reportId: targetReportId } }), 500);
           return ANALYSIS_STEPS.length;
         }
         return s + 1;

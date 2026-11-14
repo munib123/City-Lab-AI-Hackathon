@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, FileText, PlayCircle, ShieldCheck } from "lucide-react";
+import { ArrowRight, FileText, PlayCircle, ShieldCheck, UploadCloud, FlaskConical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-lab-glass.jpg";
 
@@ -76,13 +76,13 @@ export function DashboardHero() {
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Button asChild variant="hero" size="pill">
-              <Link to="/reports/$reportId" params={{ reportId: "report-P001" }}>
-                Examine P001 Report <ArrowRight />
+              <Link to="/upload">
+                <UploadCloud className="h-4 w-4 mr-1.5" /> Upload Report <ArrowRight className="h-4 w-4 ml-1" />
               </Link>
             </Button>
             <Button asChild variant="glass" size="pill">
-              <Link to="/reports">
-                <FileText /> View All 14 Test Cases
+              <Link to="/test-cases">
+                <FlaskConical className="h-4 w-4 mr-1.5" /> Official Test Cases (14)
               </Link>
             </Button>
           </div>

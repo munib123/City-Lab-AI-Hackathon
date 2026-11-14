@@ -14,6 +14,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppShell } from "@/components/layout/AppShell";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/lib/auth";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 function NotFoundComponent() {
   return (
@@ -128,11 +130,14 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <AuthProvider>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <AppShell>
         <Outlet />
       </AppShell>
       <Toaster position="bottom-right" />
+        <AuthModal />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

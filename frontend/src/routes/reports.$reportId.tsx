@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
-import { FileQuestion, Info, AlertTriangle, Check, MessageSquare, X } from "lucide-react";
+import { FileQuestion, Info, AlertTriangle, Check, MessageSquare, X, ShieldAlert } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 import { DEMO_REPORTS, getDemoReport } from "@/data/demo-reports";
 import { analyzeReport, countStatuses, CANNOT_CLASSIFY } from "@/lib/analysis";
 import { buildDoctorQuestions } from "@/lib/questions";
@@ -64,6 +65,7 @@ const FILTERS = [
 ] as const;
 
 function ReportAnalysis() {
+  const { user, switchUser, openAuthModal } = useAuth();
   const { report: initialReport } = Route.useLoaderData();
   const navigate = useNavigate();
   const { settings } = useSettings();
@@ -130,6 +132,58 @@ function ReportAnalysis() {
 
   const active = FILTERS.find((f) => f.id === filter)!;
   const visible = results.filter(active.match);
+  // Strict Patient Data Isolation Guardrail (CityLab Safety Rule #4)
+  if (user && initialReport.patient.id !== user.patientId) {
+    return (
+      <div className="mx-auto max-w-xl py-12 px-4">
+        <div className="rounded-2xl border border-red-200 bg-white p-8 text-center space-y-5 shadow-sm">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-red-100 text-red-600">
+            <ShieldAlert className="h-7 w-7" />
+          </div>
+          <div className="space-y-1.5">
+            <h2 className="font-display text-2xl font-bold text-navy">
+              Access Restricted: Patient Privacy Shield
+            </h2>
+            <p className="text-xs text-slate-600 leading-relaxed max-w-md mx-auto">
+              Under CityLab Safety Directive Rule #4, you may only review clinical reports tied to your active authenticated patient profile.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-red-100 bg-red-50/60 p-4 text-xs text-left space-y-2">
+            <div className="flex justify-between items-center pb-2 border-b border-red-100">
+              <span className="text-slate-500">Your Identity:</span>
+              <span className="font-bold text-navy">{user.name} ({user.patientId})</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-500">Target Record:</span>
+              <span className="font-bold text-red-700">{initialReport.patient.name} ({initialReport.patient.id})</span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
+            <Button asChild variant="outline" size="sm" className="rounded-full">
+              <Link to="/reports">Back to My Reports</Link>
+            </Button>
+            <Button
+              onClick={() => switchUser(initialReport.patient.id)}
+              variant="hero"
+              size="sm"
+              className="rounded-full"
+            >
+              Switch Identity to {initialReport.patient.name}
+            </Button>
+          </div>
+
+          <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+            Evaluating as a judge? You can examine all 14 clinical edge cases directly in the{" "}
+            <Link to="/test-cases" className="text-primary font-semibold hover:underline">
+              Official Benchmark Suite
+            </Link>.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-[1280px] space-y-8">
