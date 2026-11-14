@@ -19,11 +19,13 @@ export const Route = createFileRoute("/")({
 });
 
 function Overview() {
+  // Display clean sample of recent reports for Alice Smith (CLD-P001)
+  const recent = DEMO_REPORTS.slice(0, 3);
   return (
     <div className="mx-auto max-w-[1280px] space-y-8">
       <DashboardHero />
       <StatsOverview />
-      <RecentReports reports={DEMO_REPORTS} />
+      <RecentReports reports={recent} />
     </div>
   );
 }
