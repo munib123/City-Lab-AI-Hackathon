@@ -1,0 +1,111 @@
+"""LLM adapters are tested with a fake HTTP transport: no network, no key."""
+
+import json
+
+import httpx
+import pytest
+
+from medlens import config
+from medlens.llm import GeminiClient, GroqClient, LLMError, get_llm, supports_sampling_params
+
+
+def client_with(handler):
+    return httpx.Client(transport=httpx.MockTransport(handler))
+
+
+def test_gemini_request_shape_and_parsing():
+    seen = {}
+
+    def handler(request: httpx.Request):
+        seen["url"] = str(request.url)
+        seen["headers"] = dict(request.headers)
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": '{"answer":"hi"}'}]}}]})
+
+    c = GeminiClient("secret-key", "gemini-2.5-flash", http=client_with(handler))
+    out = c.generate_json("SYSTEM", "USER")
+    assert out == '{"answer":"hi"}'
+    assert seen["url"].endswith("/v1beta/models/gemini-2.5-flash:generateContent")
+    assert "secret-key" not in seen["url"]  # key goes in a header, never in the URL
+    assert seen["headers"]["x-goog-api-key"] == "secret-key"
+    body = seen["body"]
+    assert body["system_instruction"]["parts"][0]["text"] == "SYSTEM"
+    assert body["contents"][0]["parts"][0]["text"] == "USER"
+    cfg = body["generationConfig"]
+    assert cfg["responseMimeType"] == "application/json"
+    assert cfg["responseSchema"]["properties"]["answer_type"]["enum"]
+    assert cfg["temperature"] == 0
+
+
+@pytest.mark.parametrize("model, expected", [("gemini-2.5-flash", True), ("gemini-3.5-flash", True), ("gemini-3.6-flash", False), ("gemini-3.8-flash", False), ("gemini-4-pro", False), ("weird-name", True)])
+def test_newer_models_do_not_get_sampling_parameters(model, expected):
+    assert supports_sampling_params(model) is expected
+
+
+def test_gemini_omits_temperature_for_models_that_ignore_it():
+    seen = {}
+
+    def handler(request):
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(200, json={"candidates": [{"content": {"parts": [{"text": "{}"}]}}]})
+
+    GeminiClient("k", "gemini-3.8-flash", http=client_with(handler)).generate_json("s", "u")
+    assert "temperature" not in seen["body"]["generationConfig"]
+
+
+@pytest.mark.parametrize("status", [400, 401, 403, 429, 500, 503])
+def test_gemini_http_errors_become_llm_error_without_leaking_the_key(status):
+    c = GeminiClient("secret-key", "m", http=client_with(lambda r: httpx.Response(status, json={"error": {"message": "x secret-key x"}})))
+    with pytest.raises(LLMError) as exc:
+        c.generate_json("s", "u")
+    assert "secret-key" not in str(exc.value)
+    assert str(status) in str(exc.value)
+
+
+def test_gemini_blocked_or_empty_candidates_are_an_llm_error():
+    c = GeminiClient("k", "m", http=client_with(lambda r: httpx.Response(200, json={"candidates": []})))
+    with pytest.raises(LLMError):
+        c.generate_json("s", "u")
+
+
+def test_gemini_network_failure_is_an_llm_error():
+    def boom(request):
+        raise httpx.ConnectError("down")
+
+    with pytest.raises(LLMError):
+        GeminiClient("k", "m", http=client_with(boom)).generate_json("s", "u")
+
+
+def test_groq_request_shape_and_parsing():
+    seen = {}
+
+    def handler(request):
+        seen["url"] = str(request.url)
+        seen["auth"] = request.headers["authorization"]
+        seen["body"] = json.loads(request.content)
+        return httpx.Response(200, json={"choices": [{"message": {"content": '{"answer":"ok"}'}}]})
+
+    c = GroqClient("gk", "llama-x", http=client_with(handler))
+    assert c.generate_json("SYS", "USR") == '{"answer":"ok"}'
+    assert seen["url"] == "https://api.groq.com/openai/v1/chat/completions"
+    assert seen["auth"] == "Bearer gk"
+    assert seen["body"]["temperature"] == 0
+    assert seen["body"]["response_format"] == {"type": "json_object"}
+    assert [m["role"] for m in seen["body"]["messages"]] == ["system", "user"]
+
+
+def test_get_llm_returns_none_without_a_key(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    assert get_llm() is None
+
+
+def test_get_llm_builds_the_configured_provider(monkeypatch):
+    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("GEMINI_MODEL", "gemini-test")
+    c = get_llm()
+    assert isinstance(c, GeminiClient) and c.model == "gemini-test"
+    monkeypatch.setenv("LLM_PROVIDER", "groq")
+    monkeypatch.setenv("GROQ_API_KEY", "g")
+    assert isinstance(get_llm(), GroqClient)
+    assert config.llm_settings().provider == "groq"
