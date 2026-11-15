@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Bell, Lock, LogIn, LogOut, Menu, Search, ShieldCheck, User } from "lucide-react";
+import { Bell, Lock, LogIn, LogOut, Menu, PanelLeft, Search, ShieldCheck, User } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Logo } from "@/components/brand/Logo";
@@ -35,7 +35,13 @@ function buildNotifications(reports: LabReport[]): Notification[] {
   return items;
 }
 
-export function TopNavigation() {
+export function TopNavigation({
+  sidebarHidden = false,
+  onToggleSidebar,
+}: {
+  sidebarHidden?: boolean;
+  onToggleSidebar?: () => void;
+}) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -63,6 +69,17 @@ export function TopNavigation() {
         >
           <Menu className="h-4 w-4" />
         </button>
+        {onToggleSidebar && (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            className="hidden h-9 w-9 place-items-center rounded-lg border bg-card transition-colors hover:bg-accent lg:grid"
+            aria-label={sidebarHidden ? "Show sidebar" : "Hide sidebar"}
+            aria-pressed={sidebarHidden}
+          >
+            <PanelLeft className="h-4 w-4" />
+          </button>
+        )}
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetContent side="left" className="w-[290px] bg-card p-5">
             <SheetTitle className="sr-only">Navigation</SheetTitle>
