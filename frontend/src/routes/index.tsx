@@ -26,7 +26,7 @@ function Overview() {
   const mine = reportsForPatient(DEMO_REPORTS, user?.patientId);
   const recent = mine.slice(0, 3);
   return (
-    <div className="mx-auto max-w-[1280px] space-y-8">
+    <div className="space-y-8">
       <DashboardHero />
       <StatsOverview reports={mine} />
       <RecentReports reports={recent} />

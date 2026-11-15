@@ -62,7 +62,7 @@ export function DashboardHero() {
         <MolecularOverlay />
       </div>
 
-      <div className="relative grid min-h-[520px] gap-10 p-6 sm:p-10 lg:grid-cols-[1.05fr_1fr] lg:p-14">
+      <div className="relative grid min-h-[calc(100vh-9rem)] items-center gap-10 p-6 sm:p-10 lg:grid-cols-[1.05fr_1fr] lg:p-14">
         <div className="flex flex-col justify-center">
           <span className="surface-glass inline-flex w-fit items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-semibold text-primary">
             <span className="h-1.5 w-1.5 rounded-full bg-normal" />
